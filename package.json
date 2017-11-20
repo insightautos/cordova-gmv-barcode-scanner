@@ -1,0 +1,23 @@
+{
+  "name": "cordova-gmv-barcode-scanner",
+  "version": "1.0.0",
+  "description": "Google Mobile Vision Barcode Scanner Plugin",
+  "cordova": {
+    "id": "cordova-gmv-barcode-scanner",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-ios"
+  ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=3.0.0"
+    }
+  ],
+  "author": "Forrest Middleton",
+  "license": "MIT"
+}
