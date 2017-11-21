@@ -32,7 +32,6 @@
         </config-file>
 
         <config-file parent="/*" target="AndroidManifest.xml">
-            <uses-feature android:name="android.hardware.camera" />
             <uses-permission android:name="android.permission.CAMERA" />
         </config-file>
         <config-file parent="application" target="AndroidManifest.xml">
@@ -68,8 +67,8 @@
             <string name="barcode_error">"Error reading barcode: %1$s"</string>
         </config-file>
 
-        <source-file src="src/android/src"
-                     target-dir="src/com/dealrcloud/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner"
+                     target-dir="src/com/dealrcloud"/>
 
         <resource-file src="src/android/res/layout"
                        target="res/layout"/>
@@ -77,7 +76,7 @@
                        target="res/drawable"/>
 
         <framework src="com.android.support:support-v4:24.2.0" />
-        <framework src="com.google.android.gms:play-services-vision:9.4.0+" />
+        <framework src="com.google.android.gms:play-services-vision:11.0.1+" />
         <framework src="com.android.support:design:24.2.0" />
 
         <source-file src="src/android/build-extras.gradle" target-dir="../android" />

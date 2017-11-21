@@ -82,6 +82,7 @@ CDV.scanner = {
             },
             function (err){
                 switch(err[0]) {
+                    case null:
                     case "USER_CANCELLED":
                         callback({cancelled: true, message: "The scan was cancelled."});
                         break;
