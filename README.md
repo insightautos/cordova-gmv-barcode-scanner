@@ -12,7 +12,7 @@ Installation
 
 To install, simply run the `cordova plugin add ` command on this git repository.
 
-###Android Quirks
+###Android
 
 If you are using this plugin for the Android platform, it is important that you place the following code inside the `config.xml` file in the root of your Cordova project. This is a preference that will be utilized by the [`cordova-custom-config`](https://github.com/dpa99c/cordova-custom-config) library so that the theming is provided to Android. If you do not do this then the plugin will crash the application.
 
@@ -26,11 +26,14 @@ Usage
 To use the plugin simply call `CDV.scanner.scan(options, callback)`. See the sample below.
 
 ````javascript
-CDV.scanner.scan({vinDetector: true}, function(err, data) {
-	if(err) {
-			return;
-		}
-		alert(JSON.stringify(data));
+CDV.scanner.scan({vinDetector: true}, function(err, result) {
+    
+    //Handle Errors
+	if(err) return;
+	
+	//Do something with the data.
+	alert(result);
+	
 	});
 ````
 
@@ -65,4 +68,13 @@ var options = {
 
 ###Android Quirks
 
-The `detectorSize` does not currently exclude the area around the detector from being scanned, which means that anything shown on the preview screen is up for grabs to the barcode detector. On iOS this is done automatically.
+The `detectorSize` option does not currently exclude the area around the detector from being scanned, which means that anything shown on the preview screen is up for grabs to the barcode detector. On iOS this is done automatically.
+
+###VIN Scanning
+
+VIN scanning works on both iOS and Android and utilizes both Code39 and Data Matrix formats. The scanner has a VIN checksum validator that ensures that the 9th VIN digit is correctly calculated. If it is not, the barcode will simply be skipped and the scanner will continue until it finds a valid VIN.
+
+Project Info
+------------
+
+I am not a native developer and basically hacked both of the implementations together. That being said, in testing the plugins look fantastic, significantly more modern than other scanners, and they scan incredibly quickly. Please send @forrestmid a private message if you have any inclination towards assisting the development of this project!

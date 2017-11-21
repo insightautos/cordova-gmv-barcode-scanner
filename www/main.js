@@ -78,7 +78,7 @@ CDV.scanner = {
 
         callback = typeof callback == "function" ? callback : function() {};
         cordova.exec(function (data) {
-                callback(null, data);
+                callback(null, data[0]);
             },
             function (err){
                 switch(err[0]) {
