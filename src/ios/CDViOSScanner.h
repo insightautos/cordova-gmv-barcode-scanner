@@ -14,9 +14,7 @@
 
 
 @interface CDViOSScanner : CDVPlugin {
-    
-    UIView* parentView;
-    
+        
     NSString *_callback;
     Boolean _scannerOpen;
     

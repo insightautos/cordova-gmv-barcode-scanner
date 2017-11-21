@@ -14,7 +14,7 @@ To install, simply run the `cordova plugin add ` command on this git repository.
 
 ###Android
 
-If you are using this plugin for the Android platform, it is important that you place the following code inside the `config.xml` file in the root of your Cordova project. This is a preference that will be utilized by the [`cordova-custom-config`](https://github.com/dpa99c/cordova-custom-config) library so that the theming is provided to Android. If you do not do this then the plugin will crash the application.
+If you are using this plugin for the Android platform, it is important that you place the following code inside the `config.xml` file in the root of your Cordova project. This is a preference that will be utilized by the [`cordova-custom-config`](https://github.com/dpa99c/cordova-custom-config) library, which is included as a dependency of the plugin, so that the theming is provided to Android. If you do not do this then the plugin will crash the application when initializing a scan..
 
 ````xml
 <preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
@@ -26,15 +26,15 @@ Usage
 To use the plugin simply call `CDV.scanner.scan(options, callback)`. See the sample below.
 
 ````javascript
-CDV.scanner.scan({vinDetector: true}, function(err, result) {
+CDV.scanner.scan({vinDetector: true}, function(err, result) { 
     
-    //Handle Errors
+	//Handle Errors
 	if(err) return;
 	
 	//Do something with the data.
 	alert(result);
 	
-	});
+});
 ````
 
 ###Plugin Options

@@ -10,19 +10,7 @@
 
 @interface CDViOSScanner ()
 {
-    
-    UILabel *_label1;
-    UILabel *_label2;
-    UIButton *_cancelButton;
-    UIButton *_torchButton;
-    //UINavigationBar *_navcon;
-    //UILabel *_navtitle;
-    
-    
-    UIView *_highlightView;
-    
     NSInteger _previousStatusBarStyle;
-    
 }
 @end
 
