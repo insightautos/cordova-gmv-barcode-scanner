@@ -69,6 +69,13 @@ CDV.scanner = {
             detectorHeight: settings.detectorSize.height
         };
 
+        var sendSettings = [];
+        for(var key in stngs) {
+            if(stngs.hasOwnProperty(key)) {
+                sendSettings.push(stngs[key]);
+            }
+        }
+
         callback = typeof callback == "function" ? callback : function() {};
         cordova.exec(function (data) {
                 callback(null, data);
@@ -85,7 +92,7 @@ CDV.scanner = {
                         callback({cancelled: false, message: err});
                         break;
                 }
-            },'cordova-gmv-barcode-scanner','startScan',Object.values(stngs));
+            },'cordova-gmv-barcode-scanner','startScan',sendSettings);
     }
 
 };
