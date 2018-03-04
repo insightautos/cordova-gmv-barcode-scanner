@@ -7,6 +7,8 @@ Purpose of this Project
 
 The purpose of this project is to provide a barcode scanner utilizing the Google Mobile Vision library for the Cordova framework on iOS and Android. The GMV library is incredibly performant and fast in comparison to any other barcode reader that I have used that are free. Additionally, I built it to perform live validity checks on VIN numbers for use as a VIN scanner. 
 
+![iPhone X Screenshot](https://github.com/dealrinc/cordova-gmv-barcode-scanner/raw/master/screenshots/iphone-x-screenshot.jpg "iPhone X Screenshot")
+
 Installation
 ------------
 
