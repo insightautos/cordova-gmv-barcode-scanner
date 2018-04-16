@@ -76,11 +76,9 @@ public class CameraSourcePreview extends ViewGroup {
             @Override
             public void onClick(View v) {
                 try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         mCameraSource.setFlashMode(!mFlashState?Camera.Parameters.FLASH_MODE_TORCH :Camera.Parameters.FLASH_MODE_OFF);
                         mFlashState = !mFlashState;
                         mTorchButton.setBackgroundResource(getResources().getIdentifier(mFlashState ? "torch_active" : "torch_inactive", "drawable", mContext.getPackageName()));
-                    }
                 } catch(Exception e) {
 
                 }
