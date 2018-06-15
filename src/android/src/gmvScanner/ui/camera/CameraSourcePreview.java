@@ -20,9 +20,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.hardware.Camera;
-import android.hardware.camera2.CameraManager;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraManager.TorchCallback;
 import android.support.annotation.RequiresPermission;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -47,7 +44,6 @@ public class CameraSourcePreview extends ViewGroup {
     private boolean mStartRequested;
     private boolean mSurfaceAvailable;
     private CameraSource mCameraSource;
-    private CameraManager mCameraManager;
     private boolean mFlashState = false;
 
     public double ViewFinderWidth = .5;
@@ -61,7 +57,6 @@ public class CameraSourcePreview extends ViewGroup {
         mStartRequested = false;
         mSurfaceAvailable = false;
 
-        mCameraManager = (CameraManager) mContext.getApplicationContext().getSystemService(Context.CAMERA_SERVICE);
         mSurfaceView = new SurfaceView(context);
         mSurfaceView.getHolder().addCallback(new SurfaceCallback());
         addView(mSurfaceView);
@@ -77,37 +72,13 @@ public class CameraSourcePreview extends ViewGroup {
         mTorchButton.setMaxWidth(50);
         mTorchButton.setRotation(90);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            CameraManager.TorchCallback torchCallback = new TorchCallback() {
-                @Override
-                public void onTorchModeUnavailable(String cameraId) {
-                    super.onTorchModeUnavailable(cameraId);
-                }
-
-                @Override
-                public void onTorchModeChanged(String cameraId, boolean enabled) {
-                    super.onTorchModeChanged(cameraId, enabled);
-                    mFlashState = enabled;
-                    Log.d(TAG, "StateChange" + Boolean.toString(mFlashState));
-                    mTorchButton.setBackgroundResource(getResources().getIdentifier(mFlashState ? "torch_active" : "torch_inactive", "drawable", mContext.getPackageName()));
-                }
-            };
-
-        }
-
         mTorchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        for (String id : mCameraManager.getCameraIdList()) {
-                            if (mCameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.FLASH_INFO_AVAILABLE)) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                    mCameraManager.setTorchMode(id, !mFlashState);
-                                }
-                            }
-                        }
-                    }
+                        mCameraSource.setFlashMode(!mFlashState?Camera.Parameters.FLASH_MODE_TORCH :Camera.Parameters.FLASH_MODE_OFF);
+                        mFlashState = !mFlashState;
+                        mTorchButton.setBackgroundResource(getResources().getIdentifier(mFlashState ? "torch_active" : "torch_inactive", "drawable", mContext.getPackageName()));
                 } catch(Exception e) {
 
                 }
