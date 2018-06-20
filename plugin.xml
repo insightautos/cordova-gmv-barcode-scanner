@@ -73,13 +73,25 @@
             <string name="barcode_error">"Error reading barcode: %1$s"</string>
         </config-file>
 
-        <source-file src="src/android/src/gmvScanner"
-                     target-dir="src/com/dealrcloud"/>
-
-        <resource-file src="src/android/res/layout"
-                       target="res/layout"/>
-        <resource-file src="src/android/res/drawable"
-                       target="res/drawable"/>
+        <source-file src="src/android/src/gmvScanner/BarcodeCaptureActivity.java"
+                     target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/BarcodeGraphic.java"
+                     target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/BarcodeGraphicTracker.java"
+                     target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/BarcodeTrackerFactory.java"
+                     target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/CDVAndroidScanner.java"
+                     target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/SecondaryActivity.java"
+                     target-dir="src/com/dealrinc/gmvScanner"/>
+            
+        <source-file src="src/android/src/gmvScanner/ui/camera/CameraSource.java"
+                     target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
+        <source-file src="src/android/src/gmvScanner/ui/camera/CameraSourcePreview.java"
+                     target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
+        <source-file src="src/android/src/gmvScanner/ui/camera/GraphicOverlay.java"
+                     target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
 
         <framework src="com.android.support:support-v4:27.1.0" />
         <framework src="com.google.android.gms:play-services-vision:11.0.1" />
