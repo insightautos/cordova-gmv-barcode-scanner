@@ -27,20 +27,20 @@
         <source-file src="src/ios/CameraViewController.m"/>
     </platform>
     <platform name="android">
-        <config-file parent="/*" target="res/xml/config.xml">
+        <config-file parent="/*" target="app/src/main/res/xml/config.xml">
             <feature name="cordova-gmv-barcode-scanner">
                 <param name="android-package" value="com.dealrcloud.gmvScanner.CDVAndroidScanner"/>
             </feature>
         </config-file>
 
-        <config-file parent="/*" target="config.xml">
+        <config-file parent="/*" target="app/src/main/res/xml/config.xml">
             <preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
         </config-file>
 
-        <config-file parent="/*" target="AndroidManifest.xml">
+        <config-file parent="/*" target="app/src/main/AndroidManifest.xml">
             <uses-permission android:name="android.permission.CAMERA" />
         </config-file>
-        <config-file parent="application" target="AndroidManifest.xml">
+        <config-file parent="application" target="app/src/main/AndroidManifest.xml">
             <meta-data
                     android:name="com.google.android.gms.version"
                     android:value="@integer/google_play_services_version" />
@@ -58,7 +58,7 @@
 
         </config-file>
 
-        <config-file target="res/values/strings.xml" parent="/*">
+        <config-file target="app/src/main/res/values/strings.xml" parent="/*">
             <string name="ok">OK</string>
             <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
             <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
@@ -81,9 +81,9 @@
         <resource-file src="src/android/res/drawable"
                        target="res/drawable"/>
 
-        <framework src="com.android.support:support-v4:24.2.0" />
-        <framework src="com.google.android.gms:play-services-vision:11.0.1+" />
-        <framework src="com.android.support:design:24.2.0" />
+        <framework src="com.android.support:support-v4:27.1.0" />
+        <framework src="com.google.android.gms:play-services-vision:11.0.1" />
+        <framework src="com.android.support:design:27.1.0" />
 
         <source-file src="src/android/build-extras.gradle" target-dir="../android" />
     </platform>
