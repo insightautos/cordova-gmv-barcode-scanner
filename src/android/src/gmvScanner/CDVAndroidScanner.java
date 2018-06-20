@@ -1,4 +1,4 @@
-package com.dealrcloud.gmvScanner;
+package com.dealrinc.gmvScanner;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;

@@ -5,7 +5,7 @@
     android:paddingRight="16dp"
     android:paddingTop="16dp"
     android:paddingBottom="16dp"
-    tools:context="com.dealrcloud.gmvScanner.SecondaryActivity">
+    tools:context="com.dealrinc.gmvScanner.SecondaryActivity">
 
     <TextView
         android:layout_width="match_parent"

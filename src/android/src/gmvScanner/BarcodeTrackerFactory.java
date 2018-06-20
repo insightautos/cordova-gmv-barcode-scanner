@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dealrcloud.gmvScanner;
+package com.dealrinc.gmvScanner;
 
 import android.content.Context;
 
-import com.dealrcloud.gmvScanner.ui.camera.GraphicOverlay;
+import com.dealrinc.gmvScanner.ui.camera.GraphicOverlay;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.barcode.Barcode;

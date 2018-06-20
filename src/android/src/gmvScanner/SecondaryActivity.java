@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.dealrcloud.gmvScanner;
+package com.dealrinc.gmvScanner;
 
 import android.content.Intent;
 import android.os.Bundle;

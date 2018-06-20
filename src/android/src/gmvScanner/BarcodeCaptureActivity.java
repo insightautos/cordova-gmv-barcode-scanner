@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dealrcloud.gmvScanner;
+package com.dealrinc.gmvScanner;
 
 
 import android.Manifest;
@@ -47,10 +47,10 @@ import android.graphics.Point;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.CommonStatusCodes;
-import com.dealrcloud.gmvScanner.ui.camera.CameraSource;
-import com.dealrcloud.gmvScanner.ui.camera.CameraSourcePreview;
+import com.dealrinc.gmvScanner.ui.camera.CameraSource;
+import com.dealrinc.gmvScanner.ui.camera.CameraSourcePreview;
 
-import com.dealrcloud.gmvScanner.ui.camera.GraphicOverlay;
+import com.dealrinc.gmvScanner.ui.camera.GraphicOverlay;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;

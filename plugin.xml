@@ -29,7 +29,7 @@
     <platform name="android">
         <config-file parent="/*" target="app/src/main/res/xml/config.xml">
             <feature name="cordova-gmv-barcode-scanner">
-                <param name="android-package" value="com.dealrcloud.gmvScanner.CDVAndroidScanner"/>
+                <param name="android-package" value="com.dealrinc.gmvScanner.CDVAndroidScanner"/>
             </feature>
         </config-file>
 
@@ -48,13 +48,13 @@
                     android:name="com.google.android.gms.vision.DEPENDENCIES"
                     android:value="barcode" />
 
-            <activity android:label="@string/title_activity_main" android:name="com.dealrcloud.gmvScanner.SecondaryActivity">
+            <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
                     <category android:name="android.intent.category.LAUNCHER" />
                 </intent-filter>
             </activity>
-            <activity android:label="Read Barcode" android:name="com.dealrcloud.gmvScanner.BarcodeCaptureActivity" />
+            <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" />
 
         </config-file>
 
