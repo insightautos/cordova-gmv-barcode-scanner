@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-gmv-barcode-scanner" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+<plugin id="cordova-gmv-barcode-scanner" version="1.1" xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-gmv-barcode-scanner</name>
     <js-module name="cordova-gmv-barcode-scanner" src="www/main.js">
@@ -85,13 +85,28 @@
                      target-dir="src/com/dealrinc/gmvScanner"/>
         <source-file src="src/android/src/gmvScanner/SecondaryActivity.java"
                      target-dir="src/com/dealrinc/gmvScanner"/>
-            
+
         <source-file src="src/android/src/gmvScanner/ui/camera/CameraSource.java"
                      target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
         <source-file src="src/android/src/gmvScanner/ui/camera/CameraSourcePreview.java"
                      target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
         <source-file src="src/android/src/gmvScanner/ui/camera/GraphicOverlay.java"
                      target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
+
+        <resource-file src="src/android/res/layout/activity_main.xml"
+                       target="res/layout"/>
+        <resource-file src="src/android/res/layout/barcode_capture.xml"
+                       target="res/layout"/>
+
+        <resource-file src="src/android/res/drawable/flashlight.png"
+                       target="res/drawable"/>
+        <resource-file src="src/android/res/drawable/rounded_rectangle.xml"
+                       target="res/drawable"/>
+        <resource-file src="src/android/res/drawable/torch_active.xml"
+                       target="res/drawable"/>
+        <resource-file src="src/android/res/drawable/torch_inactive.xml"
+                       target="res/drawable"/>
+
 
         <framework src="com.android.support:support-v4:27.1.0" />
         <framework src="com.google.android.gms:play-services-vision:11.0.1" />
