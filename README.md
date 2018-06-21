@@ -5,30 +5,39 @@ cordova-gmv-barcode-scanner
 Purpose of this Project
 -----------------------
 
-The purpose of this project is to provide a barcode scanner utilizing the Google Mobile Vision library for the Cordova framework on iOS and Android. The GMV library is incredibly performant and fast in comparison to any other barcode reader that I have used that are free. Additionally, I built it to perform live validity checks on VIN numbers for use as a VIN scanner. 
+The purpose of this project is to provide a barcode scanner utilizing the Google Mobile Vision library for the Cordova framework on iOS and Android. The GMV library is incredibly performant and fast in comparison to any other barcode reader that I have used that are free. Additionally, I built it to perform live validity checks on VIN numbers for use as a VIN scanner and for drivers license scanning through the PDF 417 barcode on most identification cards.
 
 ![iPhone X Screenshot](https://github.com/dealrinc/cordova-gmv-barcode-scanner/raw/master/screenshots/iphone-x-screenshot.jpg "iPhone X Screenshot")
+
+You can also check out a sample application [here](https://github.com/dealrinc/cordova-gmv-barcode-scanner-sampleapp) if you'd like to see the scanner in action.
 
 Installation
 ------------
 
-To install, simply run the `cordova plugin add` command on this git repository.
+````
+cordova plugin add cordova-gmv-barcode-scanner
+````
 
 ### Android
 
-If you are using this plugin for the Android platform, it is important that you place the following code inside the `config.xml` file in the root of your Cordova project. This is a preference that will be utilized by the [`cordova-custom-config`](https://github.com/dpa99c/cordova-custom-config) library, which is included as a dependency of the plugin, so that the theming is provided to Android. If you do not do this then the plugin will crash the application when initializing a scan..
+If you are using this plugin for the Android platform, it is **very important** that you place the following code inside the `config.xml` file in the root of your Cordova project. This is a preference that will be utilized by the [`cordova-custom-config`](https://github.com/dpa99c/cordova-custom-config) library, which is included as a dependency of the plugin, so that the theming is provided to Android. If you do not do this then the plugin will crash the application when initializing a scan..
 
 ````xml
 <preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
 ````
 
+If using cordova-android@7 or above use
+````xml
+<custom-preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
+````
+
 Usage
 -----
 
-To use the plugin simply call `CDV.scanner.scan(options, callback)`. See the sample below.
+To use the plugin simply call `window.plugins.GMVBarcodeScanner.scan(options, callback)`. See the sample below.
 
 ````javascript
-CDV.scanner.scan({vinDetector: true}, function(err, result) { 
+window.plugins.GMVBarcodeScanner.scan({}, function(err, result) { 
     
 	//Handle Errors
 	if(err) return;
@@ -37,6 +46,54 @@ CDV.scanner.scan({vinDetector: true}, function(err, result) {
 	alert(result);
 	
 });
+````
+
+You can also call `scanLicense` or `scanVIN` to use the other scanning abilities. Note that the only options available to these functions are `width` and `height` of the barcode detector.
+
+
+````javascript
+window.plugins.GMVBarcodeScanner.scanVIN(function(err, result) {
+	//Handle Errors
+	if(err) return;
+	
+	//Do something with the data.
+	alert(result);
+	
+}, { width: .5, height: .7 });
+````
+
+````javascript
+window.plugins.GMVBarcodeScanner.scanLicense(function(err, result) {
+	//Handle Errors
+	if(err) return;
+	
+	//Do something with the data.
+	alert(result);
+	
+}, { width: .5, height: .7 });
+````
+
+
+### Output
+For the `scan` and `scanVIN` functions the output will be a plain string of the value scanned. For `scanLicense` the result will be an object something along the lines of
+
+```` json
+{
+    "LicenseNumber": "123456789",
+    "FirstName": "Johnny",
+    "MiddleName": "Allen",
+    "LastName": "Appleseed",
+    "BirthDate": "1/31/1990",
+    "LicenseExpiration": "1/31/2025",
+    "Address": {
+        "Address": "1234 Main St.",
+        "City": "Fairyland",
+        "State": "AB",
+        "Zip": "12345"
+    },
+    "LicenseState":"AB"
+}
+
 ````
 
 ### Plugin Options
@@ -62,8 +119,7 @@ var options = {
 	detectorSize: {
 		width: .5,
 		height: .7
-	},
-	vinDetector: false
+	}
 }
 ````
 

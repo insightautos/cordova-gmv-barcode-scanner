@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-gmv-barcode-scanner" version="1.1" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+<plugin id="cordova-gmv-barcode-scanner" version="1.2" xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-gmv-barcode-scanner</name>
     <js-module name="cordova-gmv-barcode-scanner" src="www/main.js">
@@ -8,7 +8,7 @@
         
     <engines>
         <engine name="cordova" version=">=7.1.0"/>
-        <engine name="cordova-android" version=">=7.1.0"/>
+        <engine name="cordova-android" version=">=6.3.0"/>
         <engine name="cordova-ios" version=">=4.5.0"/>
     </engines>
     <platform name="ios">
@@ -32,12 +32,23 @@
                 <param name="android-package" value="com.dealrinc.gmvScanner.CDVAndroidScanner"/>
             </feature>
         </config-file>
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="cordova-gmv-barcode-scanner">
+                <param name="android-package" value="com.dealrinc.gmvScanner.CDVAndroidScanner"/>
+            </feature>
+        </config-file>
 
         <config-file parent="/*" target="app/src/main/res/xml/config.xml">
             <preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
         </config-file>
+        <config-file parent="/*" target="res/xml/config.xml">
+            <preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
+        </config-file>
 
         <config-file parent="/*" target="app/src/main/AndroidManifest.xml">
+            <uses-permission android:name="android.permission.CAMERA" />
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml">
             <uses-permission android:name="android.permission.CAMERA" />
         </config-file>
         <config-file parent="application" target="app/src/main/AndroidManifest.xml">
@@ -55,10 +66,40 @@
                 </intent-filter>
             </activity>
             <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" />
+        </config-file>
+        <config-file parent="application" target="AndroidManifest.xml">
+            <meta-data
+                    android:name="com.google.android.gms.version"
+                    android:value="@integer/google_play_services_version" />
+            <meta-data
+                    android:name="com.google.android.gms.vision.DEPENDENCIES"
+                    android:value="barcode" />
 
+            <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity">
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
+            <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" />
         </config-file>
 
         <config-file target="app/src/main/res/values/strings.xml" parent="/*">
+            <string name="ok">OK</string>
+            <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
+            <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
+            <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
+            <string name="title_activity_main">Barcode Reader Sample</string>
+            <string name="barcode_header">Click &quot;Read Barcode&quot; to read a barcode</string>
+            <string name="read_barcode">Read Barcode</string>
+            <string name="auto_focus">Auto Focus</string>
+            <string name="use_flash">Use Flash</string>
+            <string name="barcode_success">Barcode read successfully</string>
+            <string name="barcode_failure">No barcode captured</string>
+            <string name="barcode_error">"Error reading barcode: %1$s"</string>
+        </config-file>
+
+        <config-file target="res/values/strings.xml" parent="/*">
             <string name="ok">OK</string>
             <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
             <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
@@ -94,18 +135,18 @@
                      target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
 
         <resource-file src="src/android/res/layout/activity_main.xml"
-                       target="res/layout"/>
+                       target="res/layout/activity_main.xml"/>
         <resource-file src="src/android/res/layout/barcode_capture.xml"
-                       target="res/layout"/>
+                       target="res/layout/barcode_capture.xml"/>
 
         <resource-file src="src/android/res/drawable/flashlight.png"
-                       target="res/drawable"/>
+                       target="res/drawable/flashlight.png"/>
         <resource-file src="src/android/res/drawable/rounded_rectangle.xml"
-                       target="res/drawable"/>
+                       target="res/drawable/rounded_rectangle.xml"/>
         <resource-file src="src/android/res/drawable/torch_active.xml"
-                       target="res/drawable"/>
+                       target="res/drawable/torch_active.xml"/>
         <resource-file src="src/android/res/drawable/torch_inactive.xml"
-                       target="res/drawable"/>
+                       target="res/drawable/torch_inactive.xml"/>
 
 
         <framework src="com.android.support:support-v4:27.1.0" />
