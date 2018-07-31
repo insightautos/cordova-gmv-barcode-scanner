@@ -508,6 +508,8 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
             val = val.replaceAll("[ioqIOQ]", "");
 
             val = val.substring(0, Math.min(val.length(), 17));
+            
+            barcode.rawValue = val;
 
             if(validateVin(val)) {
                 Intent data = new Intent();
