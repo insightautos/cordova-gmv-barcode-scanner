@@ -27,20 +27,12 @@
         <source-file src="src/ios/CameraViewController.m"/>
     </platform>
     <platform name="android">
-        <config-file parent="/*" target="app/src/main/res/xml/config.xml">
-            <feature name="cordova-gmv-barcode-scanner">
-                <param name="android-package" value="com.dealrinc.gmvScanner.CDVAndroidScanner"/>
-            </feature>
-        </config-file>
         <config-file parent="/*" target="res/xml/config.xml">
             <feature name="cordova-gmv-barcode-scanner">
                 <param name="android-package" value="com.dealrinc.gmvScanner.CDVAndroidScanner"/>
             </feature>
         </config-file>
 
-        <config-file parent="/*" target="app/src/main/res/xml/config.xml">
-            <preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
-        </config-file>
         <config-file parent="/*" target="res/xml/config.xml">
             <preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
         </config-file>
@@ -62,7 +54,7 @@
             <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
-                    <category android:name="android.intent.category.LAUNCHER" />
+                    <category android:name="android.intent.category.DEFAULT" />
                 </intent-filter>
             </activity>
             <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" />
@@ -78,7 +70,7 @@
             <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity">
                 <intent-filter>
                     <action android:name="android.intent.action.MAIN" />
-                    <category android:name="android.intent.category.LAUNCHER" />
+                    <category android:name="android.intent.category.DEFAULT" />
                 </intent-filter>
             </activity>
             <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" />
