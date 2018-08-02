@@ -27,13 +27,10 @@
         <source-file src="src/ios/CameraViewController.m"/>
     </platform>
     <platform name="android">
-        <config-file parent="/*" target="app/src/main/res/xml/config.xml">
+        <config-file parent="/*" target="res/xml/config.xml">
             <feature name="cordova-gmv-barcode-scanner">
                 <param name="android-package" value="com.dealrinc.gmvScanner.CDVAndroidScanner"/>
             </feature>
-        </config-file>
-        <config-file parent="/*" target="app/src/main/res/xml/config.xml">
-            <preference name="android-manifest/application/@android:theme" value="@style/Theme.AppCompat" />
         </config-file>
 
         <config-file parent="/*" target="app/src/main/AndroidManifest.xml">
@@ -56,7 +53,27 @@
             <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
         </config-file>
 
-        <config-file target="app/src/main/res/values/strings.xml" parent="/*">
+        <config-file parent="/*" target="AndroidManifest.xml">
+            <uses-permission android:name="android.permission.CAMERA" />
+        </config-file>
+        <config-file parent="application" target="AndroidManifest.xml">
+            <meta-data
+                    android:name="com.google.android.gms.version"
+                    android:value="@integer/google_play_services_version" />
+            <meta-data
+                    android:name="com.google.android.gms.vision.DEPENDENCIES"
+                    android:value="barcode" />
+
+            <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity">
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
+            <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
+        </config-file>
+
+        <config-file target="res/values/strings.xml" parent="/*">
             <string name="ok">OK</string>
             <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
             <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
@@ -112,5 +129,4 @@
             
         <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference"/>
     </platform>
-    <dependency id="cordova-custom-config" url="https://github.com/dpa99c/cordova-custom-config.git"  />
 </plugin>
