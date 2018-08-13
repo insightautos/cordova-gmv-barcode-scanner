@@ -339,9 +339,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Multitracker sample")
+        builder.setTitle("Camera permission required")
                 .setMessage(getResources().getIdentifier("no_camera_permission", "string", getPackageName()))
-                .setPositiveButton(getResources().getIdentifier("listener", "string", getPackageName()), listener)
+                .setPositiveButton(getResources().getIdentifier("ok", "string", getPackageName()), listener)
                 .show();
     }
 
