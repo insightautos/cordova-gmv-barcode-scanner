@@ -46,7 +46,7 @@ public class SecondaryActivity extends Activity implements View.OnClickListener 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(getResources().getIdentifier("activity_main", "layout", getPackageName()));
+        setContentView(getResources().getIdentifier("activity_gmv_barcode_scanner", "layout", getPackageName()));
 
         findViewById(getResources().getIdentifier("read_barcode", "id", getPackageName())).setOnClickListener(this);
 

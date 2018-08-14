@@ -109,7 +109,7 @@
                      target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
 
         <resource-file src="src/android/res/layout/activity_main.xml"
-                       target="res/layout/activity_main.xml"/>
+                       target="res/layout/activity_gmv_barcode_scanner.xml"/>
         <resource-file src="src/android/res/layout/barcode_capture.xml"
                        target="res/layout/barcode_capture.xml"/>
 
