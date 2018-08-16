@@ -11,6 +11,7 @@ import org.json.JSONException;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -65,6 +66,8 @@ public class CDVAndroidScanner extends CordovaPlugin {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
         if (requestCode == RC_BARCODE_CAPTURE) {
             if (resultCode == CommonStatusCodes.SUCCESS) {
                 Intent d = new Intent();
@@ -87,10 +90,13 @@ public class CDVAndroidScanner extends CordovaPlugin {
                 mCallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, result));
             }
         }
-        else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
     }
+    
+    @Override
+    public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
+        mCallbackContext = callbackContext;
+    }
+    
 /*
     private void startScan(CallbackContext callbackContext) {
 		Intent intent = new Intent(this, MainActivity.class);
