@@ -19,12 +19,23 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.os.Build;
+import android.os.Environment;
 import android.os.SystemClock;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsic;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
 import android.support.annotation.StringDef;
@@ -32,12 +43,17 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 
 import com.google.android.gms.common.images.Size;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.Thread.State;
 import java.lang.annotation.Retention;
@@ -47,6 +63,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 // Note: This requires Google Play Services 8.1 or higher, due to using indirect byte buffers for
 // storing images.
@@ -119,6 +136,11 @@ public class CameraSource {
 
     // Guarded by mCameraLock
     private Camera mCamera;
+    public int viewWidth;
+    public int viewHeight;
+
+    public double ViewFinderWidth = .5;
+    public double ViewFinderHeight = .7;
 
     private int mFacing = CAMERA_FACING_BACK;
 
@@ -129,6 +151,8 @@ public class CameraSource {
     private int mRotation;
 
     private Size mPreviewSize;
+
+    private List<Camera.Area> mFocusAreas;
 
     // These values may be requested by the caller.  Due to hardware limitations, we may need to
     // select close, but not exactly the same values for these.
@@ -206,6 +230,11 @@ public class CameraSource {
 
         public Builder setFlashMode(@FlashMode String mode) {
             mCameraSource.mFlashMode = mode;
+            return this;
+        }
+
+        public Builder setFocusAreas(List<Camera.Area> focusAreas) {
+            mCameraSource.mFocusAreas = focusAreas;
             return this;
         }
 
@@ -797,6 +826,7 @@ public class CameraSource {
 
         // setting mFlashMode to the one set in the params
         mFlashMode = parameters.getFlashMode();
+        parameters.setFocusAreas(mFocusAreas);
 
         camera.setParameters(parameters);
 
@@ -1086,6 +1116,7 @@ public class CameraSource {
         private long mPendingTimeMillis;
         private int mPendingFrameId = 0;
         private ByteBuffer mPendingFrameData;
+        private Bitmap mPendingFrameBitmap;
 
         FrameProcessingRunnable(Detector<?> detector) {
             mDetector = detector;
@@ -1136,10 +1167,58 @@ public class CameraSource {
                 mPendingTimeMillis = SystemClock.elapsedRealtime() - mStartTimeMillis;
                 mPendingFrameId++;
                 mPendingFrameData = mBytesToByteBuffer.get(data);
-
+                mPendingFrameBitmap = Bitmap.createBitmap(mPreviewSize.getWidth(), mPreviewSize.getHeight(), Bitmap.Config.ARGB_8888);
+                Allocation bmData = renderScriptNV21ToRGBA888(
+                        mContext,
+                        mPreviewSize.getWidth(),
+                        mPreviewSize.getHeight(),
+                        data);
+                bmData.copyTo(mPendingFrameBitmap);
                 // Notify the processor thread if it is waiting on the next frame (see below).
                 mLock.notifyAll();
             }
+        }
+
+
+        public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
+            RenderScript rs = RenderScript.create(context);
+            ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+
+            Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
+            Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+
+            Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
+            Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+
+            in.copyFrom(nv21);
+
+            yuvToRgbIntrinsic.setInput(in);
+            yuvToRgbIntrinsic.forEach(out);
+            return out;
+        }
+
+        private String saveToInternalStorage(Bitmap bitmapImage){
+            ContextWrapper cw = new ContextWrapper(mContext);
+            // path to /data/data/yourapp/app_data/imageDir
+            File directory = cw.getDir("imageDir", Context.MODE_WORLD_READABLE);
+            // Create imageDir
+            File mypath=new File(directory,"profile.jpg");
+
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(mypath);
+                // Use the compress method on the BitMap object to write image to the OutputStream
+                bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return directory.getAbsolutePath();
         }
 
         /**
@@ -1182,9 +1261,66 @@ public class CameraSource {
                         return;
                     }
 
+                    // Extract the viewfinder portion of the preview.
+
+                    float origFrameWidth = (float) mPreviewSize.getWidth();
+                    float origFrameHeight = (float) mPreviewSize.getHeight();
+                    if (origFrameHeight < origFrameWidth) {
+                        origFrameWidth = (float) mPreviewSize.getHeight();
+                        origFrameHeight = (float) mPreviewSize.getWidth();
+                    }
+
+                    float ratio = origFrameHeight / viewHeight;
+                    if (ratio > origFrameWidth/viewWidth) {
+                        ratio = origFrameWidth/viewWidth;
+                    }
+
+                    int newViewWidth = (int) (viewWidth * ratio);
+                    int newViewHeight = (int) (viewHeight * ratio);
+
+                    int viewFinderWidth = (int) (newViewWidth * ViewFinderWidth);
+                    int viewFinderHeight = (int) (newViewHeight * ViewFinderHeight);
+
+                    int x = (int) (origFrameWidth/2 - viewFinderWidth/2);
+                    int y = (int) (origFrameHeight/2 - viewFinderHeight/2);
+
+                    Matrix matrix = new Matrix();
+
+                    matrix.postRotate(90);
+
+                    mPendingFrameBitmap = Bitmap.createBitmap(mPendingFrameBitmap, 0, 0, mPendingFrameBitmap.getWidth(), mPendingFrameBitmap.getHeight(), matrix, true);
+                    Log.d(TAG, (origFrameWidth/viewHeight) + "viewWidth:" + viewWidth + " viewHeight:" + viewHeight + " r:" + ratio + " x:" + x + " y:" + y + " w:" + viewFinderWidth + " h:"+viewFinderHeight + " w1:" + origFrameWidth + " h1:" +origFrameHeight);
+                    Bitmap resizedBitmap = Bitmap.createBitmap(mPendingFrameBitmap, x,y,viewFinderWidth, viewFinderHeight);
+
+                    /* For debugging the cropping of the frame.
+                    String root = Environment.getExternalStorageDirectory().toString();
+                    File myDir = new File(root + "/req_images");
+                    myDir.mkdirs();
+                    Random generator = new Random();
+                    int n = 10000;
+                    n = generator.nextInt(n);
+                    String fname = "Image-" + n + ".jpg";
+                    File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fname);
+                    Log.i(TAG, "" + file);
+                    if (file.exists())
+                        file.delete();
+                    try {
+                        FileOutputStream out = new FileOutputStream(file);
+                        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                        out.flush();
+                        out.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    if (true) {
+                        return;
+                    } //*/
+
                     outputFrame = new Frame.Builder()
-                            .setImageData(mPendingFrameData, mPreviewSize.getWidth(),
-                                    mPreviewSize.getHeight(), ImageFormat.NV21)
+                            .setBitmap(resizedBitmap)
+                            /*.setImageData(mPendingFrameData, mPreviewSize.getWidth(),
+                                    mPreviewSize.getHeight(), ImageFormat.NV21) //*/
                             .setId(mPendingFrameId)
                             .setTimestampMillis(mPendingTimeMillis)
                             .setRotation(mRotation)
@@ -1195,6 +1331,7 @@ public class CameraSource {
                     // recycled back to the camera before we are done using that data.
                     data = mPendingFrameData;
                     mPendingFrameData = null;
+                    mPendingFrameBitmap = null;
                 }
 
                 // The code below needs to run outside of synchronization, because this will allow
