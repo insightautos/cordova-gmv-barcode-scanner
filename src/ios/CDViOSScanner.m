@@ -57,7 +57,7 @@
             self.cameraViewController.scanAreaWidth = (CGFloat)[[command argumentAtIndex:1 withDefault:@.5] floatValue];
             self.cameraViewController.scanAreaHeight = (CGFloat)[[command argumentAtIndex:2 withDefault:@.7] floatValue];
             self.cameraViewController.barcodeFormats = barcodeFormats;
-            self.modalPresentationStyle = UIModalPresentationFullScreen;
+            self.cameraViewController.modalPresentationStyle = UIModalPresentationFullScreen;
 
             NSLog(@"Test %@, width: %f, height: %f, barcodeFormats: %@",[command.arguments objectAtIndex:2], self.cameraViewController.scanAreaWidth, self.cameraViewController.scanAreaHeight, self.cameraViewController.barcodeFormats);
             
