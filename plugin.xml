@@ -114,7 +114,7 @@
 
 
         <framework src="com.android.support:support-v4:27.1.0" />
-        <framework src="com.google.android.gms:play-services-vision:11.0.1" />
+        <framework src="com.google.android.gms:play-services-vision:17.0.2" />
         <framework src="com.android.support:design:27.1.0" />
             
         <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference"/>
