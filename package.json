@@ -1,9 +1,9 @@
 {
-  "name": "cordova-gmv-barcode-scanner",
-  "version": "1.3.0",
+  "name": "cordova-plugin-barcode-detector",
+  "version": "1.5.0",
   "description": "Google Mobile Vision Barcode Scanner Plugin",
   "cordova": {
-    "id": "cordova-gmv-barcode-scanner",
+    "id": "cordova-plugin-barcode-detector",
     "platforms": [
       "ios"
     ]
@@ -13,12 +13,10 @@
     "cordova-ios",
     "cordova-android"
   ],
-  "engines": [
-    {
-      "name": "cordova",
-      "version": ">=3.0.0"
-    }
-  ],
+  "engines": [{
+    "name": "cordova",
+    "version": ">=3.0.0"
+  }],
   "author": "Forrest Middleton",
   "license": "MIT",
   "main": "index.js",
@@ -27,10 +25,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://forrestmid@github.com/dealrinc/cordova-gmv-barcode-scanner.git"
+    "url": "git+https://forrestmid@github.com/dealrinc/cordova-plugin-barcode-detector.git"
   },
   "bugs": {
-    "url": "https://github.com/dealrinc/cordova-gmv-barcode-scanner/issues"
+    "url": "https://github.com/dealrinc/cordova-plugin-barcode-detector/issues"
   },
-  "homepage": "https://github.com/dealrinc/cordova-gmv-barcode-scanner#readme"
+  "homepage": "https://github.com/dealrinc/cordova-plugin-barcode-detector#readme"
 }

@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-gmv-barcode-scanner" version="1.4" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+<plugin id="cordova-plugin-barcode-detector" version="1.5.0" xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
-    <name>cordova-gmv-barcode-scanner</name>
-    <js-module name="cordova-gmv-barcode-scanner" src="www/main.js">
+    <name>cordova-plugin-barcode-detector</name>
+    <js-module name="cordova-plugin-barcode-detector" src="www/main.js">
         <clobbers target="cordova.plugins.gmv-barcode-scanner"/>
     </js-module>
-        
+
     <engines>
         <engine name="cordova" version=">=7.1.0"/>
         <engine name="cordova-android" version=">=6.3.0"/>
@@ -13,14 +13,29 @@
     </engines>
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
-            <feature name="cordova-gmv-barcode-scanner">
+            <feature name="cordova-plugin-barcode-detector">
                 <param name="ios-package" value="CDViOSScanner"/>
             </feature>
         </config-file>
         <framework src="Foundation.framework"/>
         <framework src="AVFoundation.framework"/>
         <framework src="UIKit.framework"/>
-        <framework spec="~&gt; 1.1" src="GoogleMobileVision/BarcodeDetector" type="podspec"/>
+        <framework src="CoreMedia.framework"/>
+        <framework src="CoreVideo.framework"/>
+        <framework src="CoreGraphics.framework"/>
+        <framework src="CoreImage.framework"/>
+        <framework src="Accelerate.framework"/>
+        <framework src="LocalAuthentication.framework"/>
+        <framework src="libc++.tbd"/>
+        <framework src="libz.tbd"/>
+        <framework src="libstdc++.tbd"/>
+        <framework src="libsqlite3.tbd"/>
+        <framework src="frameworks/BarcodeDetector.framework" custom="true"/>
+        <framework src="frameworks/GoogleMobileVision.framework" custom="true"/>
+        <framework src="frameworks/GoogleMVDataOutput.framework" custom="true"/>
+        <framework src="frameworks/GoogleToolboxForMac.framework" custom="true"/>
+        <framework src="frameworks/GTMSessionFetcher.framework" custom="true"/>
+        <framework src="frameworks/Protobuf.framework" custom="true"/>
         <header-file src="src/ios/CDViOSScanner.h"/>
         <source-file src="src/ios/CDViOSScanner.m"/>
         <header-file src="src/ios/CameraViewController.h"/>
@@ -28,7 +43,7 @@
     </platform>
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
-            <feature name="cordova-gmv-barcode-scanner">
+            <feature name="cordova-plugin-barcode-detector">
                 <param name="android-package" value="com.dealrinc.gmvScanner.CDVAndroidScanner"/>
             </feature>
         </config-file>
@@ -116,7 +131,7 @@
         <framework src="com.android.support:support-v4:27.1.0" />
         <framework src="com.google.android.gms:play-services-vision:17.0.2" />
         <framework src="com.android.support:design:27.1.0" />
-            
+
         <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference"/>
     </platform>
 </plugin>

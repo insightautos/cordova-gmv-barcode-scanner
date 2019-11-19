@@ -105,7 +105,7 @@ GMVBarcodeScanner.prototype.sendScanRequest = function(settings, callback) {
                     callback({cancelled: false, message: err});
                     break;
             }
-        },'cordova-gmv-barcode-scanner','startScan',settings);
+        },'cordova-plugin-barcode-detector','startScan',settings);
 };
 
 GMVBarcodeScanner.prototype.scanLicense = function(callback, settings) {
