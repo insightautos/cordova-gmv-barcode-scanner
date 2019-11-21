@@ -172,6 +172,36 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
                 .show();
     }
 
+    /* Used in testing.
+    private void requestFilesPermission() {
+        Log.w(TAG, "Files permission is not granted. Requesting permission");
+
+        final String[] permissions = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(this, permissions, 3);
+            return;
+        }
+
+        final Activity thisActivity = this;
+
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ActivityCompat.requestPermissions(thisActivity, permissions,
+                        3);
+            }
+        };
+
+        findViewById(getResources().getIdentifier("topLayout", "id", getPackageName())).setOnClickListener(listener);
+        Snackbar.make(mGraphicOverlay, getResources().getIdentifier("permission_camera_rationale", "string", getPackageName()),
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(getResources().getIdentifier("ok", "string", getPackageName()), listener)
+                .show();
+    }*/
+
+
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         boolean b = scaleGestureDetector.onTouchEvent(e);
@@ -246,6 +276,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         // Creates and starts the camera.  Note that this uses a higher resolution in comparison
         // to other detection examples to enable the barcode detector to detect small barcodes
         // at long distances.
+
         CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
                 .setRequestedPreviewSize(1600, 1024)
@@ -260,6 +291,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         mCameraSource = builder
                 .setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null)
                 .build();
+
+        mCameraSource.ViewFinderWidth = ViewFinderWidth;
+        mCameraSource.ViewFinderHeight = ViewFinderHeight;
     }
 
     /**
@@ -342,9 +376,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Camera permission required")
+        builder.setTitle("Multitracker sample")
                 .setMessage(getResources().getIdentifier("no_camera_permission", "string", getPackageName()))
-                .setPositiveButton(getResources().getIdentifier("ok", "string", getPackageName()), listener)
+                .setPositiveButton(getResources().getIdentifier("listener", "string", getPackageName()), listener)
                 .show();
     }
 

@@ -175,12 +175,18 @@ public class CameraSourcePreview extends ViewGroup {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         int width = 320;
         int height = 240;
+
+        final int layoutWidth = right - left;
+        final int layoutHeight = bottom - top;
+
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
             if (size != null) {
                 width = size.getWidth();
                 height = size.getHeight();
             }
+            mCameraSource.viewWidth = layoutWidth;
+            mCameraSource.viewHeight = layoutHeight;
         }
 
         // Swap width and height sizes when in portrait, since it will be rotated 90 degrees
@@ -190,9 +196,6 @@ public class CameraSourcePreview extends ViewGroup {
             width = height;
             height = tmp;
         }
-
-        final int layoutWidth = right - left;
-        final int layoutHeight = bottom - top;
 
         // Computes height and width for potentially doing fit width.
 
