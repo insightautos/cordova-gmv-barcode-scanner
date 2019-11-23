@@ -71,6 +71,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    // Prevent crash on old Apple devices
+    self.controller = self;
+    
     // Set up camera.
     self.session = [[AVCaptureSession alloc] init];
     self.session.sessionPreset = AVCaptureSessionPresetHigh;
