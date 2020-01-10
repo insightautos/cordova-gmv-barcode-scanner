@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-barcode-detector",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Google Mobile Vision Barcode Scanner Plugin",
   "cordova": {
     "id": "cordova-plugin-barcode-detector",
@@ -30,5 +30,6 @@
   "bugs": {
     "url": "https://github.com/dealrinc/cordova-plugin-barcode-detector/issues"
   },
-  "homepage": "https://github.com/dealrinc/cordova-plugin-barcode-detector#readme"
+  "homepage": "https://github.com/dealrinc/cordova-plugin-barcode-detector#readme",
+  "types": "/types/main.d.ts"
 }

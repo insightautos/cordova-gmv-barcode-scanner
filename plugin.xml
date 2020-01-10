@@ -1,9 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-barcode-detector" version="1.5.0" xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="cordova-plugin-barcode-detector" version="1.5.1" 
+    xmlns="http://apache.org/cordova/ns/plugins/1.0" 
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-plugin-barcode-detector</name>
     <js-module name="cordova-plugin-barcode-detector" src="www/main.js">
-        <clobbers target="cordova.plugins.gmv-barcode-scanner"/>
+        <clobbers target="cordova.plugins.GMVBarcodeScanner"/>
     </js-module>
 
     <engines>
@@ -52,12 +53,8 @@
             <uses-permission android:name="android.permission.CAMERA" />
         </config-file>
         <config-file parent="application" target="app/src/main/AndroidManifest.xml">
-            <meta-data
-                    android:name="com.google.android.gms.version"
-                    android:value="@integer/google_play_services_version" />
-            <meta-data
-                    android:name="com.google.android.gms.vision.DEPENDENCIES"
-                    android:value="barcode" />
+            <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+            <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="barcode" />
 
             <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity"/>
             <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
@@ -67,12 +64,8 @@
             <uses-permission android:name="android.permission.CAMERA" />
         </config-file>
         <config-file parent="application" target="AndroidManifest.xml">
-            <meta-data
-                    android:name="com.google.android.gms.version"
-                    android:value="@integer/google_play_services_version" />
-            <meta-data
-                    android:name="com.google.android.gms.vision.DEPENDENCIES"
-                    android:value="barcode" />
+            <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+            <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="barcode" />
 
             <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity"/>
             <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
@@ -93,39 +86,24 @@
             <string name="barcode_error">"Error reading barcode: %1$s"</string>
         </config-file>
 
-        <source-file src="src/android/src/gmvScanner/BarcodeCaptureActivity.java"
-                     target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/BarcodeGraphic.java"
-                     target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/BarcodeGraphicTracker.java"
-                     target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/BarcodeTrackerFactory.java"
-                     target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/CDVAndroidScanner.java"
-                     target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/SecondaryActivity.java"
-                     target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/BarcodeCaptureActivity.java" target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/BarcodeGraphic.java" target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/BarcodeGraphicTracker.java" target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/BarcodeTrackerFactory.java" target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/CDVAndroidScanner.java" target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/gmvScanner/SecondaryActivity.java" target-dir="src/com/dealrinc/gmvScanner"/>
 
-        <source-file src="src/android/src/gmvScanner/ui/camera/CameraSource.java"
-                     target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
-        <source-file src="src/android/src/gmvScanner/ui/camera/CameraSourcePreview.java"
-                     target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
-        <source-file src="src/android/src/gmvScanner/ui/camera/GraphicOverlay.java"
-                     target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
+        <source-file src="src/android/src/gmvScanner/ui/camera/CameraSource.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
+        <source-file src="src/android/src/gmvScanner/ui/camera/CameraSourcePreview.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
+        <source-file src="src/android/src/gmvScanner/ui/camera/GraphicOverlay.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
 
-        <resource-file src="src/android/res/layout/activity_main.xml"
-                       target="res/layout/activity_gmv_barcode_scanner.xml"/>
-        <resource-file src="src/android/res/layout/barcode_capture.xml"
-                       target="res/layout/barcode_capture.xml"/>
+        <resource-file src="src/android/res/layout/activity_main.xml" target="res/layout/activity_gmv_barcode_scanner.xml"/>
+        <resource-file src="src/android/res/layout/barcode_capture.xml" target="res/layout/barcode_capture.xml"/>
 
-        <resource-file src="src/android/res/drawable/flashlight.png"
-                       target="res/drawable/flashlight.png"/>
-        <resource-file src="src/android/res/drawable/rounded_rectangle.xml"
-                       target="res/drawable/rounded_rectangle.xml"/>
-        <resource-file src="src/android/res/drawable/torch_active.xml"
-                       target="res/drawable/torch_active.xml"/>
-        <resource-file src="src/android/res/drawable/torch_inactive.xml"
-                       target="res/drawable/torch_inactive.xml"/>
+        <resource-file src="src/android/res/drawable/flashlight.png" target="res/drawable/flashlight.png"/>
+        <resource-file src="src/android/res/drawable/rounded_rectangle.xml" target="res/drawable/rounded_rectangle.xml"/>
+        <resource-file src="src/android/res/drawable/torch_active.xml" target="res/drawable/torch_active.xml"/>
+        <resource-file src="src/android/res/drawable/torch_inactive.xml" target="res/drawable/torch_inactive.xml"/>
 
 
         <framework src="com.android.support:support-v4:27.1.0" />
