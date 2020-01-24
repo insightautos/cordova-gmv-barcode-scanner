@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-barcode-detector" version="1.5.1" 
-    xmlns="http://apache.org/cordova/ns/plugins/1.0" 
+<plugin id="cordova-plugin-barcode-detector" version="1.5.1"
+    xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <name>cordova-plugin-barcode-detector</name>
     <js-module name="cordova-plugin-barcode-detector" src="www/main.js">
@@ -55,8 +55,6 @@
         <config-file parent="application" target="app/src/main/AndroidManifest.xml">
             <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
             <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="barcode" />
-
-            <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity"/>
             <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
         </config-file>
 
@@ -66,8 +64,6 @@
         <config-file parent="application" target="AndroidManifest.xml">
             <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
             <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="barcode" />
-
-            <activity android:label="@string/title_activity_main" android:name="com.dealrinc.gmvScanner.SecondaryActivity"/>
             <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
         </config-file>
 
@@ -91,13 +87,11 @@
         <source-file src="src/android/src/gmvScanner/BarcodeGraphicTracker.java" target-dir="src/com/dealrinc/gmvScanner"/>
         <source-file src="src/android/src/gmvScanner/BarcodeTrackerFactory.java" target-dir="src/com/dealrinc/gmvScanner"/>
         <source-file src="src/android/src/gmvScanner/CDVAndroidScanner.java" target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/SecondaryActivity.java" target-dir="src/com/dealrinc/gmvScanner"/>
 
         <source-file src="src/android/src/gmvScanner/ui/camera/CameraSource.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
         <source-file src="src/android/src/gmvScanner/ui/camera/CameraSourcePreview.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
         <source-file src="src/android/src/gmvScanner/ui/camera/GraphicOverlay.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
 
-        <resource-file src="src/android/res/layout/activity_main.xml" target="res/layout/activity_gmv_barcode_scanner.xml"/>
         <resource-file src="src/android/res/layout/barcode_capture.xml" target="res/layout/barcode_capture.xml"/>
 
         <resource-file src="src/android/res/drawable/flashlight.png" target="res/drawable/flashlight.png"/>
