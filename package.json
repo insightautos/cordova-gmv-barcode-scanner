@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-barcode-detector",
-  "version": "1.5.1",
+  "version": "1.5.3",
   "description": "Google Mobile Vision Barcode Scanner Plugin",
   "cordova": {
     "id": "cordova-plugin-barcode-detector",
