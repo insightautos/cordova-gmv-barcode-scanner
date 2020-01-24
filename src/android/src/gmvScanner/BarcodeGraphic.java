@@ -75,10 +75,10 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
      * Updates the barcode instance from the detection of the most recent frame.  Invalidates the
      * relevant portions of the overlay to trigger a redraw.
      */
-    void updateItem(Barcode barcode) {
+    /*void updateItem(Barcode barcode) {
         mBarcode = barcode;
         postInvalidate();
-    }
+    }*/
 
     /**
      * Draws the barcode annotations for position, size, and raw value on the supplied canvas.
