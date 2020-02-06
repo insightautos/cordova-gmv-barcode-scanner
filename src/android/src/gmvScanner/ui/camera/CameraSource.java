@@ -1290,32 +1290,16 @@ public class CameraSource {
 
                     mPendingFrameBitmap = Bitmap.createBitmap(mPendingFrameBitmap, 0, 0, mPendingFrameBitmap.getWidth(), mPendingFrameBitmap.getHeight(), matrix, true);
                     Log.d(TAG, (origFrameWidth/viewHeight) + "viewWidth:" + viewWidth + " viewHeight:" + viewHeight + " r:" + ratio + " x:" + x + " y:" + y + " w:" + viewFinderWidth + " h:"+viewFinderHeight + " w1:" + origFrameWidth + " h1:" +origFrameHeight);
-                    Bitmap resizedBitmap = Bitmap.createBitmap(mPendingFrameBitmap, x,y,viewFinderWidth, viewFinderHeight);
-
-                    /* For debugging the cropping of the frame.
-                    String root = Environment.getExternalStorageDirectory().toString();
-                    File myDir = new File(root + "/req_images");
-                    myDir.mkdirs();
-                    Random generator = new Random();
-                    int n = 10000;
-                    n = generator.nextInt(n);
-                    String fname = "Image-" + n + ".jpg";
-                    File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fname);
-                    Log.i(TAG, "" + file);
-                    if (file.exists())
-                        file.delete();
-                    try {
-                        FileOutputStream out = new FileOutputStream(file);
-                        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                        out.flush();
-                        out.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    Bitmap resizedBitmap;
+                    
+                    if (viewFinderWidth == 0 || viewFinderHeight == 0)
+                    {
+                      resizedBitmap = mPendingFrameBitmap;
                     }
-
-                    if (true) {
-                        return;
-                    } //*/
+                    else
+                    {
+                      resizedBitmap = Bitmap.createBitmap(mPendingFrameBitmap, x,y,viewFinderWidth, viewFinderHeight);
+                    }
 
                     outputFrame = new Frame.Builder()
                             .setBitmap(resizedBitmap)
