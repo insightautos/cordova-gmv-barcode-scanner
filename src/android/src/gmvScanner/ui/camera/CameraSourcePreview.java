@@ -234,7 +234,7 @@ public class CameraSourcePreview extends ViewGroup {
         int actualWidth = (int) (layoutWidth*ViewFinderWidth);
         int actualHeight = (int) (layoutHeight*ViewFinderHeight);
 
-        mViewFinderView.layout(layoutWidth/2 -actualWidth/2,layoutHeight/2 - layoutHeight/4, layoutWidth/2 + actualWidth/2, layoutHeight/2 + layoutHeight/4);
+        mViewFinderView.layout(layoutWidth/2 -actualWidth/2,layoutHeight/2 - layoutwidth/4, layoutWidth/2 + actualWidth/2, layoutHeight/2 + layoutwidth/4);
 
         int buttonSize = dpToPx(45);
         int torchLeft = layoutWidth/2 + actualWidth/2 + (layoutWidth - (layoutWidth/2 + actualWidth/2))/2 - buttonSize/2;
