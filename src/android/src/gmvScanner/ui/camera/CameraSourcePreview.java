@@ -186,6 +186,8 @@ public class CameraSourcePreview extends ViewGroup {
         int width = 320;
         int height = 240;
 
+        debugText.setText("left: " + left + " top: " + top + " right: " + right + " bottom: " + bottom);
+
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
             if (size != null) {
