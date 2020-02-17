@@ -191,7 +191,7 @@ public class CameraSourcePreview extends ViewGroup {
 
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
-            debugText.setText(mCameraSource.toString());
+            debugText.setText(mCameraSource.getPreviewSize().toString());
             if (size != null) {
                 width = size.getWidth();
                 height = size.getHeight();
