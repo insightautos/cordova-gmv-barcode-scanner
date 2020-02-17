@@ -69,8 +69,9 @@ public class CameraSourcePreview extends ViewGroup {
 
         debugText = new TextView(mContext);
         debugText.setId(555);
-        debugText.layout(10, 10, 100, 100);
+        debugText.layout(100, 100, 100, 100);
         debugText.setText("test text");
+        debugText.setTextSize(20);
         addView(debugText);
 
         mTorchButton = new Button(mContext);
