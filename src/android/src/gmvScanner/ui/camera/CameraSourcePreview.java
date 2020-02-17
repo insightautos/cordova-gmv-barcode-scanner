@@ -59,10 +59,10 @@ public class CameraSourcePreview extends ViewGroup {
         mSurfaceView.getHolder().addCallback(new SurfaceCallback());
         addView(mSurfaceView);
 
-        // mViewFinderView = new View(mContext);
-        // mViewFinderView.setBackgroundResource(getResources().getIdentifier("rounded_rectangle", "drawable", mContext.getPackageName()));
-        // mViewFinderView.layout(0,0, 500, 500);
-        // addView(mViewFinderView);
+        mViewFinderView = new View(mContext);
+        mViewFinderView.setBackgroundResource(getResources().getIdentifier("rounded_rectangle", "drawable", mContext.getPackageName()));
+        mViewFinderView.layout(10,20, 100, 200);
+        addView(mViewFinderView);
 
         mTorchButton = new Button(mContext);
         mTorchButton.setBackgroundResource(getResources().getIdentifier("torch_inactive", "drawable", mContext.getPackageName()));
@@ -176,17 +176,12 @@ public class CameraSourcePreview extends ViewGroup {
         int width = 320;
         int height = 240;
 
-        final int layoutWidth = right - left;
-        final int layoutHeight = bottom - top;
-
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
             if (size != null) {
                 width = size.getWidth();
                 height = size.getHeight();
             }
-            mCameraSource.viewWidth = width;
-            mCameraSource.viewHeight = height;
         }
 
         // Swap width and height sizes when in portrait, since it will be rotated 90 degrees
@@ -197,51 +192,35 @@ public class CameraSourcePreview extends ViewGroup {
             height = tmp;
         }
 
+        final int layoutWidth = right - left;
+        final int layoutHeight = bottom - top;
+
         // Computes height and width for potentially doing fit width.
+        int childWidth = layoutWidth;
+        int childHeight = (int)(((float) layoutWidth / (float) width) * height);
+        int offsetX = 0;
+        int offsetY = (int)((float)layoutHeight - (float)childHeight)/2;
 
-        int childWidth;
-        int childHeight;
-        int childXOffset = 0;
-        int childYOffset = 0;
-        float widthRatio = (float) layoutWidth / (float) width;
-        float heightRatio = (float) layoutHeight / (float) height;
-
-        // To fill the view with the camera preview, while also preserving the correct aspect ratio,
-        // it is usually necessary to slightly oversize the child and to crop off portions along one
-        // of the dimensions.  We scale up based on the dimension requiring the most correction, and
-        // compute a crop offset for the other dimension.
-        if (widthRatio > heightRatio) {
-            childWidth = layoutWidth;
-            childHeight = (int) ((float) height * widthRatio);
-            childYOffset = (layoutHeight - childHeight) / 2;
-        } else {
-            childWidth = (int) ((float) width * heightRatio);
+        // If height is too tall using fit width, does fit height instead.
+        if (childHeight > layoutHeight) {
             childHeight = layoutHeight;
-            childXOffset = (layoutWidth - childWidth) / 2;
+            childWidth = (int)(((float) layoutHeight / (float) height) * width);
+            offsetX = (int)((float)layoutWidth - (float)childWidth)/2;
+            offsetY = 0;
         }
 
         for (int i = 0; i < getChildCount(); ++i) {
-            // One dimension will be cropped.  We shift child over or up by this offset and adjust
-            // the size to maintain the proper aspect ratio.
-            getChildAt(i).layout(
-                    -1 * childXOffset, -1 * childYOffset,
-                    childWidth - childXOffset, childHeight - childYOffset);
+            getChildAt(i).layout(offsetX, offsetY, childWidth, childHeight);
         }
 
-        mSurfaceView.layout(childXOffset, childYOffset, childWidth, childHeight);
-
-
-        int actualWidth = (int) (layoutWidth*ViewFinderWidth);
-        int actualHeight = (int) (layoutHeight*ViewFinderHeight);
-
-        mViewFinderView.layout(layoutWidth/2 -actualWidth/2,layoutHeight/2 - actualHeight/2, layoutWidth/2 + actualWidth/2, layoutHeight/2 + actualHeight/2);
+        // TODO
+        // mViewFinderView.layout(layoutWidth/2 -actualWidth/2,layoutHeight/2 - actualHeight/2, layoutWidth/2 + actualWidth/2, layoutHeight/2 + actualHeight/2);
 
         int buttonSize = dpToPx(45);
-        int torchLeft = layoutWidth/2 + actualWidth/2 + (layoutWidth - (layoutWidth/2 + actualWidth/2))/2 - buttonSize/2;
-        int torchTop = layoutHeight - (layoutWidth-torchLeft);
+        int torchLeft = layoutWidth - (buttonSize * 2);
+        int torchTop = layoutHeight - (buttonSize * 2);
 
-        //mTorchButton.layout(torchLeft, torchTop, torchLeft + buttonSize, torchTop + buttonSize);
-        mTorchButton.layout(torchLeft - buttonSize/2, torchTop - buttonSize/2, torchLeft + buttonSize/2, torchTop + buttonSize/2);
+        mTorchButton.layout(torchLeft, torchTop, torchLeft + buttonSize, torchTop + buttonSize);
 
         try {
             startIfReady();
