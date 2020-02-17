@@ -154,6 +154,7 @@ public class CameraSourcePreview extends ViewGroup {
                     mOverlay.setCameraInfo(max, min, mCameraSource.getCameraFacing());
                 }
                 mOverlay.clear();
+                requestLayout();
             }
             mStartRequested = false;
         }
@@ -191,10 +192,10 @@ public class CameraSourcePreview extends ViewGroup {
 
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
-            debugText.setText(mCameraSource.getPreviewSize().toString());
             if (size != null) {
                 width = size.getWidth();
                 height = size.getHeight();
+                debugText.setText("size exists!");
             }
         }
 
