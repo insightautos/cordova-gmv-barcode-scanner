@@ -70,7 +70,7 @@ public class CameraSourcePreview extends ViewGroup {
         debugText = new TextView(mContext);
         debugText.setId(555);
         debugText.layout(100, 100, 100, 100);
-        //debugText.setText("test text");
+        // debugText.setText("test text");
         debugText.setTextSize(20);
         debugText.setTextColor(0xFF0000FF);
         addView(debugText);
@@ -146,6 +146,7 @@ public class CameraSourcePreview extends ViewGroup {
                 Size size = mCameraSource.getPreviewSize();
                 int min = Math.min(size.getWidth(), size.getHeight());
                 int max = Math.max(size.getWidth(), size.getHeight());
+                debugText.setText("min: " + min + " max: " + max);
                 if (isPortraitMode()) {
                     // Swap width and height sizes when in portrait, since it will be rotated by
                     // 90 degrees
@@ -187,7 +188,7 @@ public class CameraSourcePreview extends ViewGroup {
         int width = 320;
         int height = 240;
 
-        //debugText.setText("left: " + left + " top: " + top + " right: " + right + " bottom: " + bottom);
+        // debugText.setText("left: " + left + " top: " + top + " right: " + right + " bottom: " + bottom);
 
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();

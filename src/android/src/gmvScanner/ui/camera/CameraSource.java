@@ -41,7 +41,6 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
-import android.widget.TextView;
 
 import com.google.android.gms.common.images.Size;
 import com.google.android.gms.vision.Detector;
@@ -893,9 +892,6 @@ public class CameraSource {
                 minDiff = diff;
             }
         }
-
-        TextView debugText = (TextView) findViewById(555);
-        debugText.setText("selectedPair: " + selectedPair.toString());
 
         return selectedPair;
     }
