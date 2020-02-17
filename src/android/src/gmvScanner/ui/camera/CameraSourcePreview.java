@@ -27,6 +27,7 @@ import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.gms.common.images.Size;
 
@@ -49,6 +50,8 @@ public class CameraSourcePreview extends ViewGroup {
 
     private GraphicOverlay mOverlay;
 
+    public TextView debugText;
+
     public CameraSourcePreview(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
@@ -63,6 +66,12 @@ public class CameraSourcePreview extends ViewGroup {
         mViewFinderView.setBackgroundResource(getResources().getIdentifier("rounded_rectangle", "drawable", mContext.getPackageName()));
         mViewFinderView.layout(10,20, 100, 200);
         addView(mViewFinderView);
+
+        debugText = new TextView(mContext);
+        debugText.setId(555);
+        debugText.layout(10, 10, 100, 100);
+        debugText.setText("test text");
+        addView(debugText);
 
         mTorchButton = new Button(mContext);
         mTorchButton.setBackgroundResource(getResources().getIdentifier("torch_inactive", "drawable", mContext.getPackageName()));
