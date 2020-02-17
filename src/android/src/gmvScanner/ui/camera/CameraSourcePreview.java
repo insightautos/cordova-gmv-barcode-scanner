@@ -146,7 +146,6 @@ public class CameraSourcePreview extends ViewGroup {
                 Size size = mCameraSource.getPreviewSize();
                 int min = Math.min(size.getWidth(), size.getHeight());
                 int max = Math.max(size.getWidth(), size.getHeight());
-                debugText.setText("min: " + min + " max: " + max);
                 if (isPortraitMode()) {
                     // Swap width and height sizes when in portrait, since it will be rotated by
                     // 90 degrees
@@ -192,6 +191,7 @@ public class CameraSourcePreview extends ViewGroup {
 
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
+            debugText.setText(size.toString());
             if (size != null) {
                 width = size.getWidth();
                 height = size.getHeight();
