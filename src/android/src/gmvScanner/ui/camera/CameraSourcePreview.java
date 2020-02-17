@@ -234,6 +234,8 @@ public class CameraSourcePreview extends ViewGroup {
 
         mTorchButton.layout(torchLeft, torchTop, torchLeft + buttonSize, torchTop + buttonSize);
 
+        debugText.layout(100, 100, 100, 100);
+
         try {
             startIfReady();
         } catch (SecurityException se) {
