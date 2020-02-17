@@ -195,7 +195,7 @@ public class CameraSourcePreview extends ViewGroup {
             if (size != null) {
                 width = size.getWidth();
                 height = size.getHeight();
-                debugText.setText("size exists!");
+                debugText.setText("size exists!" + " width: " + width + " height: " + height);
             }
         }
 
