@@ -8,16 +8,16 @@
     android:layout_height="match_parent"
     android:keepScreenOn="true">
 
-  <com.dealrinc.gmvScanner.ui.camera.CameraSourcePreview
+  <com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.CameraSourcePreview
       android:id="@+id/preview"
       android:layout_width="match_parent"
       android:layout_height="match_parent">
 
-    <com.dealrinc.gmvScanner.ui.camera.GraphicOverlay
+    <com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.GraphicOverlay
         android:id="@+id/graphicOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-  </com.dealrinc.gmvScanner.ui.camera.CameraSourcePreview>
+  </com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.CameraSourcePreview>
 
 </LinearLayout>

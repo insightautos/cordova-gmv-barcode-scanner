@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="cordova-plugin-barcode-detector" version="1.5.4"
+<plugin id="cordova-plugin-mlkit-barcode-scanner" version="2.0.0"
     xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <name>cordova-plugin-barcode-detector</name>
-    <js-module name="cordova-plugin-barcode-detector" src="www/main.js">
-        <clobbers target="cordova.plugins.GMVBarcodeScanner"/>
+    <name>cordova-plugin-mlkit-barcode-scanner</name>
+    <js-module name="cordova-plugin-ml-kit-barcode-scanner" src="www/main.js">
+        <clobbers target="cordova.plugins.mlkit.barcodeScanner"/>
     </js-module>
 
     <engines>
@@ -14,7 +14,7 @@
     </engines>
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
-            <feature name="cordova-plugin-barcode-detector">
+            <feature name="cordova-plugin-mlkit-barcode-scanner">
                 <param name="ios-package" value="CDViOSScanner"/>
             </feature>
         </config-file>
@@ -44,8 +44,8 @@
     </platform>
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
-            <feature name="cordova-plugin-barcode-detector">
-                <param name="android-package" value="com.dealrinc.gmvScanner.CDVAndroidScanner"/>
+            <feature name="cordova-plugin-mlkit-barcode-scanner">
+                <param name="android-package" value="com.mobisys.cordova.plugins.mlkit.barcode.scanner.MLKitBarcodeScanner"/>
             </feature>
         </config-file>
 
@@ -55,7 +55,8 @@
         <config-file parent="application" target="app/src/main/AndroidManifest.xml">
             <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
             <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="barcode" />
-            <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
+            <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode" />
+            <activity android:label="Read Barcode" android:name="com.mobisys.cordova.plugins.mlkit.barcode.scanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
         </config-file>
 
         <config-file parent="/*" target="AndroidManifest.xml">
@@ -64,7 +65,7 @@
         <config-file parent="application" target="AndroidManifest.xml">
             <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
             <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="barcode" />
-            <activity android:label="Read Barcode" android:name="com.dealrinc.gmvScanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
+            <activity android:label="Read Barcode" android:name="com.mobisys.cordova.plugins.mlkit.barcode.scanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
         </config-file>
 
         <config-file target="res/values/strings.xml" parent="/*">
@@ -82,15 +83,14 @@
             <string name="barcode_error">"Error reading barcode: %1$s"</string>
         </config-file>
 
-        <source-file src="src/android/src/gmvScanner/BarcodeCaptureActivity.java" target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/BarcodeGraphic.java" target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/BarcodeGraphicTracker.java" target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/BarcodeTrackerFactory.java" target-dir="src/com/dealrinc/gmvScanner"/>
-        <source-file src="src/android/src/gmvScanner/CDVAndroidScanner.java" target-dir="src/com/dealrinc/gmvScanner"/>
+        <source-file src="src/android/src/BarcodeCaptureActivity.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
+        <source-file src="src/android/src/BarcodeGraphic.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
+        <source-file src="src/android/src/BarcodeScanningProcessor.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
+        <source-file src="src/android/src/MLKitBarcodeScanner.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
 
-        <source-file src="src/android/src/gmvScanner/ui/camera/CameraSource.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
-        <source-file src="src/android/src/gmvScanner/ui/camera/CameraSourcePreview.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
-        <source-file src="src/android/src/gmvScanner/ui/camera/GraphicOverlay.java" target-dir="src/com/dealrinc/gmvScanner/ui/camera"/>
+        <source-file src="src/android/src/ui/camera/CameraSource.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/ui/camera"/>
+        <source-file src="src/android/src/ui/camera/CameraSourcePreview.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/ui/camera"/>
+        <source-file src="src/android/src/ui/camera/GraphicOverlay.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/ui/camera"/>
 
         <resource-file src="src/android/res/layout/barcode_capture.xml" target="res/layout/barcode_capture.xml"/>
 
@@ -102,6 +102,9 @@
 
         <framework src="com.android.support:support-v4:27.1.0" />
         <framework src="com.google.android.gms:play-services-vision:17.0.2" />
+
+        <framework src="com.google.mlkit:barcode-scanning:16.0.3"/>
+
         <framework src="com.android.support:design:27.1.0" />
 
         <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference"/>

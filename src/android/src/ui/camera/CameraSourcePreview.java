@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dealrinc.gmvScanner.ui.camera;
+package com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.Camera;
-import android.support.annotation.RequiresPermission;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -27,11 +26,12 @@ import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.android.gms.common.images.Size;
 
 import java.io.IOException;
+
+import androidx.annotation.RequiresPermission;
 
 public class CameraSourcePreview extends ViewGroup {
     private static final String TAG = "CameraSourcePreview";
@@ -50,8 +50,6 @@ public class CameraSourcePreview extends ViewGroup {
 
     private GraphicOverlay mOverlay;
 
-    public TextView debugText;
-
     public CameraSourcePreview(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
@@ -64,20 +62,12 @@ public class CameraSourcePreview extends ViewGroup {
 
         mViewFinderView = new View(mContext);
         mViewFinderView.setBackgroundResource(getResources().getIdentifier("rounded_rectangle", "drawable", mContext.getPackageName()));
-        mViewFinderView.layout(10,20, 100, 200);
+        mViewFinderView.layout(0, 0, 500, 500);
         addView(mViewFinderView);
-
-        debugText = new TextView(mContext);
-        debugText.setId(555);
-        debugText.layout(100, 100, 100, 100);
-        // debugText.setText("test text");
-        debugText.setTextSize(20);
-        debugText.setTextColor(0xFF0000FF);
-        addView(debugText);
 
         mTorchButton = new Button(mContext);
         mTorchButton.setBackgroundResource(getResources().getIdentifier("torch_inactive", "drawable", mContext.getPackageName()));
-        mTorchButton.layout(0,0, dpToPx(45),dpToPx(45));
+        mTorchButton.layout(0, 0, dpToPx(45), dpToPx(45));
         mTorchButton.setMaxWidth(50);
         mTorchButton.setRotation(90);
 
@@ -88,7 +78,7 @@ public class CameraSourcePreview extends ViewGroup {
                     mCameraSource.setFlashMode(!mFlashState ? Camera.Parameters.FLASH_MODE_TORCH : Camera.Parameters.FLASH_MODE_OFF);
                     mFlashState = !mFlashState;
                     mTorchButton.setBackgroundResource(getResources().getIdentifier(mFlashState ? "torch_active" : "torch_inactive", "drawable", mContext.getPackageName()));
-                } catch(Exception e) {
+                } catch (Exception e) {
 
                 }
             }
@@ -112,6 +102,8 @@ public class CameraSourcePreview extends ViewGroup {
         }
 
         mCameraSource = cameraSource;
+        //mCameraSource.ViewFinderHeight = ViewFinderHeight;
+        //mCameraSource.ViewFinderWidth = ViewFinderWidth;
 
         if (mCameraSource != null) {
             mStartRequested = true;
@@ -154,7 +146,6 @@ public class CameraSourcePreview extends ViewGroup {
                     mOverlay.setCameraInfo(max, min, mCameraSource.getCameraFacing());
                 }
                 mOverlay.clear();
-                requestLayout();
             }
             mStartRequested = false;
         }
@@ -167,7 +158,7 @@ public class CameraSourcePreview extends ViewGroup {
             try {
                 startIfReady();
             } catch (SecurityException se) {
-                Log.e(TAG,"Do not have permission to start the camera", se);
+                Log.e(TAG, "Do not have permission to start the camera", se);
             } catch (IOException e) {
                 Log.e(TAG, "Could not start camera source.", e);
             }
@@ -188,15 +179,17 @@ public class CameraSourcePreview extends ViewGroup {
         int width = 320;
         int height = 240;
 
-        // debugText.setText("left: " + left + " top: " + top + " right: " + right + " bottom: " + bottom);
+        final int layoutWidth = right - left;
+        final int layoutHeight = bottom - top;
 
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
             if (size != null) {
                 width = size.getWidth();
                 height = size.getHeight();
-                debugText.setText("size exists!" + " width: " + width + " height: " + height);
             }
+            //mCameraSource.viewWidth = width;
+            //mCameraSource.viewHeight = height;
         }
 
         // Swap width and height sizes when in portrait, since it will be rotated 90 degrees
@@ -207,42 +200,56 @@ public class CameraSourcePreview extends ViewGroup {
             height = tmp;
         }
 
-        final int layoutWidth = right - left;
-        final int layoutHeight = bottom - top;
-
         // Computes height and width for potentially doing fit width.
-        int childWidth = layoutWidth;
-        int childHeight = (int)(((float) layoutWidth / (float) width) * height);
-        int offsetX = 0;
-        int offsetY = (int)((float)layoutHeight - (float)childHeight)/2;
 
-        // If height is too tall using fit width, does fit height instead.
-        if (childHeight > layoutHeight) {
+        int childWidth;
+        int childHeight;
+        int childXOffset = 0;
+        int childYOffset = 0;
+        float widthRatio = (float) layoutWidth / (float) width;
+        float heightRatio = (float) layoutHeight / (float) height;
+
+        // To fill the view with the camera preview, while also preserving the correct aspect ratio,
+        // it is usually necessary to slightly oversize the child and to crop off portions along one
+        // of the dimensions.  We scale up based on the dimension requiring the most correction, and
+        // compute a crop offset for the other dimension.
+        if (widthRatio > heightRatio) {
+            childWidth = layoutWidth;
+            childHeight = (int) ((float) height * widthRatio);
+            childYOffset = (layoutHeight - childHeight) / 2;
+        } else {
+            childWidth = (int) ((float) width * heightRatio);
             childHeight = layoutHeight;
-            childWidth = (int)(((float) layoutHeight / (float) height) * width);
-            offsetX = (int)((float)layoutWidth - (float)childWidth)/2;
-            offsetY = 0;
+            childXOffset = (layoutWidth - childWidth) / 2;
         }
 
         for (int i = 0; i < getChildCount(); ++i) {
-            getChildAt(i).layout(offsetX, offsetY, childWidth, childHeight);
+            // One dimension will be cropped.  We shift child over or up by this offset and adjust
+            // the size to maintain the proper aspect ratio.
+            getChildAt(i).layout(
+                    -1 * childXOffset, -1 * childYOffset,
+                    childWidth - childXOffset, childHeight - childYOffset);
         }
 
-        // TODO
-        // mViewFinderView.layout(layoutWidth/2 -actualWidth/2,layoutHeight/2 - actualHeight/2, layoutWidth/2 + actualWidth/2, layoutHeight/2 + actualHeight/2);
+        mSurfaceView.layout(childXOffset, childYOffset, childWidth, childHeight);
+
+
+        int actualWidth = (int) (layoutWidth * ViewFinderWidth);
+        int actualHeight = (int) (layoutHeight * ViewFinderHeight);
+
+        mViewFinderView.layout(layoutWidth / 2 - actualWidth / 2, layoutHeight / 2 - actualHeight / 2, layoutWidth / 2 + actualWidth / 2, layoutHeight / 2 + actualHeight / 2);
 
         int buttonSize = dpToPx(45);
-        int torchLeft = layoutWidth - (buttonSize * 2);
-        int torchTop = layoutHeight - (buttonSize * 2);
+        int torchLeft = layoutWidth / 2 + actualWidth / 2 + (layoutWidth - (layoutWidth / 2 + actualWidth / 2)) / 2 - buttonSize / 2;
+        int torchTop = layoutHeight - (layoutWidth - torchLeft);
 
-        mTorchButton.layout(torchLeft, torchTop, torchLeft + buttonSize, torchTop + buttonSize);
-
-        debugText.layout(100, 100, 1000, 1000);
+        //mTorchButton.layout(torchLeft, torchTop, torchLeft + buttonSize, torchTop + buttonSize);
+        mTorchButton.layout(torchLeft - buttonSize / 2, torchTop - buttonSize / 2, torchLeft + buttonSize / 2, torchTop + buttonSize / 2);
 
         try {
             startIfReady();
         } catch (SecurityException se) {
-            Log.e(TAG,"Do not have permission to start the camera", se);
+            Log.e(TAG, "Do not have permission to start the camera", se);
         } catch (IOException e) {
             Log.e(TAG, "Could not start camera source.", e);
         }

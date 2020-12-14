@@ -1,4 +1,4 @@
-package com.dealrinc.gmvScanner;
+package com.mobisys.cordova.plugins.mlkit.barcode.scanner;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
@@ -13,16 +13,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+
 import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.vision.barcode.Barcode;
 
 
 /**
  * This class echoes a string called from JavaScript.
  */
-public class CDVAndroidScanner extends CordovaPlugin {
+public class MLKitBarcodeScanner extends CordovaPlugin {
 
-    private CallbackContext mCallbackContext;
+    private CallbackContext _CallbackContext;
 
     private static final int RC_BARCODE_CAPTURE = 9001;
 
@@ -32,14 +32,19 @@ public class CDVAndroidScanner extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-		Context context = cordova.getActivity().getApplicationContext();
-        mCallbackContext = callbackContext;
-		if (action.equals("startScan")) {
+        Context context = cordova.getActivity().getApplicationContext();
+        _CallbackContext = callbackContext;
+        if (action.equals("startScan")) {
 
             class OneShotTask implements Runnable {
                 private Context context;
                 private JSONArray args;
-                private OneShotTask(Context ctx, JSONArray as) { context = ctx; args = as; }
+
+                private OneShotTask(Context ctx, JSONArray as) {
+                    context = ctx;
+                    args = as;
+                }
+
                 public void run() {
                     openNewActivity(context, args);
                 }
@@ -52,14 +57,14 @@ public class CDVAndroidScanner extends CordovaPlugin {
     }
 
     private void openNewActivity(Context context, JSONArray args) {
-		Intent intent = new Intent(context, BarcodeCaptureActivity.class);
+        Intent intent = new Intent(context, BarcodeCaptureActivity.class);
         intent.putExtra("DetectionTypes", args.optInt(0, 1234));
         intent.putExtra("ViewFinderWidth", args.optDouble(1, .5));
         intent.putExtra("ViewFinderHeight", args.optDouble(2, .7));
 
         this.cordova.setActivityResultCallback(this);
         this.cordova.startActivityForResult(this, intent, RC_BARCODE_CAPTURE);
-	}
+    }
 
 
     @Override
@@ -69,14 +74,16 @@ public class CDVAndroidScanner extends CordovaPlugin {
         if (requestCode == RC_BARCODE_CAPTURE) {
             if (resultCode == CommonStatusCodes.SUCCESS) {
                 if (data != null) {
-                    Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
+                    Integer barcodeFormat = data.getIntExtra(BarcodeCaptureActivity.BarcodeFormat, 0);
+                    Integer barcodeType = data.getIntExtra(BarcodeCaptureActivity.BarcodeType, 0);
+                    String barcodeValue = data.getStringExtra(BarcodeCaptureActivity.BarcodeValue);
                     JSONArray result = new JSONArray();
-                    result.put(barcode.rawValue);
-                    result.put("");
-                    result.put("");
-                    mCallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+                    result.put(barcodeValue);
+                    result.put(barcodeFormat);
+                    result.put(barcodeType);
+                    _CallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
 
-                    Log.d("CDVAndroidScanner", "Barcode read: " + barcode.displayValue);
+                    Log.d("MLKitBarcodeScanner", "Barcode read: " + barcodeValue);
                 }
             } else {
                 String err = data.getStringExtra("err");
@@ -84,13 +91,13 @@ public class CDVAndroidScanner extends CordovaPlugin {
                 result.put(err);
                 result.put("");
                 result.put("");
-                mCallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, result));
+                _CallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, result));
             }
         }
     }
 
     @Override
     public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
-        mCallbackContext = callbackContext;
+        _CallbackContext = callbackContext;
     }
 }

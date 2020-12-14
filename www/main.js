@@ -1,9 +1,10 @@
 // JavaScript Document
 CDV = (typeof CDV == 'undefined' ? {} : CDV);
 var cordova = window.cordova || window.Cordova;
+
 (function () {
-    function GMVBarcodeScanner() { }
-    GMVBarcodeScanner.prototype.scan = function (params, success, failure) {
+    function MLKitBarcodeScanner() { }
+    MLKitBarcodeScanner.prototype.scan = function (params, success, failure) {
         // Default settings. Scan every barcode type.
         var settings = {
             types: {
@@ -70,7 +71,7 @@ var cordova = window.cordova || window.Cordova;
         }
         this.sendScanRequest(sendSettings, success, failure);
     };
-    GMVBarcodeScanner.prototype.sendScanRequest = function (settings, success, failure) {
+    MLKitBarcodeScanner.prototype.sendScanRequest = function (settings, success, failure) {
         cordova.exec(function (data) {
             success(data[0]);
         },
@@ -87,7 +88,7 @@ var cordova = window.cordova || window.Cordova;
                         failure({ cancelled: false, message: err });
                         break;
                 }
-            }, 'cordova-plugin-barcode-detector', 'startScan', settings);
+            }, 'cordova-plugin-mlkit-barcode-scanner', 'startScan', settings);
     };
-    module.exports = new GMVBarcodeScanner();
+    module.exports = new MLKitBarcodeScanner();
 })();

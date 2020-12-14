@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dealrinc.gmvScanner;
+package com.mobisys.cordova.plugins.mlkit.barcode.scanner;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
-import com.dealrinc.gmvScanner.ui.camera.GraphicOverlay;
-import com.google.android.gms.vision.barcode.Barcode;
+import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.GraphicOverlay;
+import com.google.mlkit.vision.barcode.Barcode;
 
 /**
  * Graphic instance for rendering barcode position, size, and ID within an associated graphic
@@ -29,7 +29,7 @@ import com.google.android.gms.vision.barcode.Barcode;
  */
 public class BarcodeGraphic extends GraphicOverlay.Graphic {
 
-    private int mId;
+    private int _Id;
 
     private static final int COLOR_CHOICES[] = {
             Color.BLUE,
@@ -39,9 +39,9 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
 
     private static int mCurrentColorIndex = 0;
 
-    private Paint mRectPaint;
-    private Paint mTextPaint;
-    private volatile Barcode mBarcode;
+    private Paint _RectPaint;
+    private Paint _TextPaint;
+    private static volatile Barcode _Barcode;
 
     BarcodeGraphic(GraphicOverlay overlay) {
         super(overlay);
@@ -49,26 +49,26 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
         mCurrentColorIndex = (mCurrentColorIndex + 1) % COLOR_CHOICES.length;
         final int selectedColor = COLOR_CHOICES[mCurrentColorIndex];
 
-        mRectPaint = new Paint();
-        mRectPaint.setColor(selectedColor);
-        mRectPaint.setStyle(Paint.Style.STROKE);
-        mRectPaint.setStrokeWidth(4.0f);
+        _RectPaint = new Paint();
+        _RectPaint.setColor(selectedColor);
+        _RectPaint.setStyle(Paint.Style.STROKE);
+        _RectPaint.setStrokeWidth(4.0f);
 
-        mTextPaint = new Paint();
-        mTextPaint.setColor(selectedColor);
-        mTextPaint.setTextSize(36.0f);
+        _TextPaint = new Paint();
+        _TextPaint.setColor(selectedColor);
+        _TextPaint.setTextSize(36.0f);
     }
 
     public int getId() {
-        return mId;
+        return _Id;
     }
 
     public void setId(int id) {
-        this.mId = id;
+        this._Id = id;
     }
 
     public Barcode getBarcode() {
-        return mBarcode;
+        return _Barcode;
     }
 
     /**
@@ -85,7 +85,7 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
      */
     @Override
     public void draw(Canvas canvas) {
-        Barcode barcode = mBarcode;
+        Barcode barcode = _Barcode;
         if (barcode == null) {
             return;
         }
@@ -96,9 +96,9 @@ public class BarcodeGraphic extends GraphicOverlay.Graphic {
         rect.top = translateY(rect.top);
         rect.right = translateX(rect.right);
         rect.bottom = translateY(rect.bottom);
-        canvas.drawRect(rect, mRectPaint);
+        canvas.drawRect(rect, _RectPaint);
 
         // Draws a label at the bottom of the barcode indicate the barcode value that was detected.
-        canvas.drawText(barcode.rawValue, rect.left, rect.bottom, mTextPaint);
+        canvas.drawText(barcode.getRawValue(), rect.left, rect.bottom, _TextPaint);
     }
 }

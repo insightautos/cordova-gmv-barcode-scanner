@@ -1,5 +1,5 @@
 
-cordova-plugin-barcode-detector
+cordova-plugin-mlkit-barcode-scanner
 ===========================
 
 Purpose of this Project
@@ -7,15 +7,15 @@ Purpose of this Project
 
 The purpose of this project is to provide a barcode scanner utilizing the Google Mobile Vision library for the Cordova framework on iOS and Android. The GMV library is incredibly performant and fast in comparison to any other barcode reader that I have used that are free. Additionally, I built it to perform live validity checks on VIN numbers for use as a VIN scanner and for drivers license scanning through the PDF 417 barcode on most identification cards.
 
-![iPhone X Screenshot](https://github.com/dealrinc/cordova-plugin-barcode-detector/raw/master/screenshots/iphone-x-screenshot.jpg "iPhone X Screenshot")
+![iPhone X Screenshot](https://github.com/dealrinc/cordova-plugin-mlkit-barcode-scanner/raw/master/screenshots/iphone-x-screenshot.jpg "iPhone X Screenshot")
 
-You can also check out a sample application [here](https://github.com/dealrinc/cordova-plugin-barcode-detector-sampleapp) if you'd like to see the scanner in action.
+You can also check out a sample application [here](https://github.com/dealrinc/cordova-plugin-mlkit-barcode-scanner-sampleapp) if you'd like to see the scanner in action.
 
 Installation
 ------------
 
 ````
-cordova plugin add cordova-plugin-barcode-detector
+cordova plugin add cordova-plugin-mlkit-barcode-scanner
 ````
 
 Usage
@@ -24,7 +24,7 @@ Usage
 To use the plugin simply call `window.plugins.GMVBarcodeScanner.scan(options, callback)`. See the sample below.
 
 ````javascript
-window.plugins.GMVBarcodeScanner.scan({}, function(err, result) {
+cordova.plugins.mlkit.barcodeScanner.scan({}, function(err, result) {
 
 	//Handle Errors
 	if(err) return;
@@ -34,32 +34,6 @@ window.plugins.GMVBarcodeScanner.scan({}, function(err, result) {
 
 });
 ````
-
-You can also call `scanLicense` or `scanVIN` to use the other scanning abilities. Note that the only options available to these functions are `width` and `height` of the barcode detector.
-
-
-````javascript
-window.plugins.GMVBarcodeScanner.scanVIN(function(err, result) {
-	//Handle Errors
-	if(err) return;
-
-	//Do something with the data.
-	alert(result);
-
-}, { width: .5, height: .7 });
-````
-
-````javascript
-window.plugins.GMVBarcodeScanner.scanLicense(function(err, result) {
-	//Handle Errors
-	if(err) return;
-
-	//Do something with the data.
-	alert(result);
-
-}, { width: .5, height: .7 });
-````
-
 
 ### Output
 For the `scan` and `scanVIN` functions the output will be a plain string of the value scanned. For `scanLicense` the result will be an object something along the lines of
