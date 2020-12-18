@@ -14,14 +14,15 @@
  limitations under the License.
  */
 
+@import MLKitBarcodeScanning;
 @import UIKit;
 
 // View controller demonstraing how to use the barcode detector with the AVFoundation
 // video pipeline.
 @protocol senddataProtocol <NSObject>
 
--(void)closeScanner;
--(void)sendResult:(NSString *)result;
+- (void)closeScanner;
+- (void)sendResult:(MLKBarcode *)result;
 
 @end
 

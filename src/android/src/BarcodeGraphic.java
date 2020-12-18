@@ -20,8 +20,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
-import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.GraphicOverlay;
 import com.google.mlkit.vision.barcode.Barcode;
+
+import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.GraphicOverlay;
 
 /**
  * Graphic instance for rendering barcode position, size, and ID within an associated graphic

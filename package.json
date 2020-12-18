@@ -1,10 +1,11 @@
 {
   "name": "cordova-plugin-mlkit-barcode-scanner",
-  "version": "1.5.4",
-  "description": "Google Mobile Vision Barcode Scanner Plugin",
+  "version": "2.0.0",
+  "description": "Google MLKit Vision Barcode Scanner Plugin",
   "cordova": {
     "id": "cordova-plugin-mlkit-barcode-scanner",
     "platforms": [
+      "android",
       "ios"
     ]
   },
@@ -13,19 +14,31 @@
     "cordova-ios",
     "cordova-android"
   ],
-  "engines": [{
-    "name": "cordova",
-    "version": ">=3.0.0"
-  }],
-  "author": "Forrest Middleton",
+  "author": "Florian Biebel",
   "license": "MIT",
-  "main": "index.js",
+  "main": "www/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc --project tsconfig.json",
+    "test": "tslint --project tsconfig.json"
   },
-  "bugs": {
-    "url": "https://github.com/flobiwankenobi/cordova-plugin-mlkit-barcode-scanner/issues"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner.git"
   },
-  "homepage": "https://github.com/flobiwankenobi/cordova-plugin-mlkit-barcode-scanner#readme",
-  "types": "/types/main.d.ts"
+  "homepage": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner#readme",
+  "types": "/types/main.d.ts",
+  "publishConfig": {
+    "registry": "https://pkgs.dev.azure.com/mobisysgmbh/_packaging/mobisys/npm/registry/"
+  },
+  "devDependencies": {
+    "@types/cordova": "^0.0.34",
+    "mobisys-cordova-plugin-intent": "^2.0.3",
+    "mobisys-ts-config": "^3.0.0",
+    "prettier": "^2.2.0",
+    "rollup": "^1.11.3",
+    "rollup-plugin-typescript2": "^0.21.0",
+    "shx": "^0.3.2",
+    "tslint": "^5.16.0",
+    "typescript": "^3.9.7"
+  }
 }

@@ -15,11 +15,10 @@
  */
 
 @import AVFoundation;
-@import Vision;
-@import GoogleMobileVision;
+@import MLKitBarcodeScanning;
+@import MLKitVision;
 
 #import "CameraViewController.h"
-
 
 @interface CameraViewController ()<AVCaptureVideoDataOutputSampleBufferDelegate>
 
@@ -32,7 +31,7 @@
 @property(nonatomic, strong) dispatch_queue_t videoDataOutputQueue;
 @property(nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
 
-@property(nonatomic, strong) GMVDetector *barcodeDetector;
+@property(nonatomic, strong) MLKBarcodeScanner *barcodeDetector;
 @property(nonatomic, strong) UIButton *torchButton;
 
 @end
@@ -50,12 +49,12 @@
     return YES;
 }
 
--(BOOL) shouldAutorotate
+- (BOOL) shouldAutorotate
 {
     return NO;
 }
 
--(NSUInteger)supportedInterfaceOrientations {
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return UIInterfaceOrientationMaskPortrait;
 }
 
@@ -92,21 +91,19 @@
     //If barcodeFormats == 0 then process as a VIN with VIN verifications.
     if([_barcodeFormats  isEqual: @0]) {
         NSLog(@"Running VIN style");
-        formats = @(GMVDetectorBarcodeFormatCode39|GMVDetectorBarcodeFormatDataMatrix);
+        formats = @(MLKBarcodeFormatCode39|MLKBarcodeFormatDataMatrix);
     } else if([_barcodeFormats  isEqual: @1234]) {
-        
+        // @todo: investigating what should be done here
     } else {
         formats = _barcodeFormats;
     }
     NSLog(@"_barcodeFormats %@, %@", _barcodeFormats, formats);
     
     // Initialize barcode detector.
-    NSDictionary *options = @{
-                              GMVDetectorBarcodeFormats: formats
-                              };
-    self.barcodeDetector = [GMVDetector detectorOfType:GMVDetectorTypeBarcode options:options];
+    MLKBarcodeScannerOptions *options = [[MLKBarcodeScannerOptions alloc] initWithFormats: [formats intValue]];
+    self.barcodeDetector = [MLKBarcodeScanner barcodeScannerWithOptions:options];
     
-}
+    }
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
@@ -144,14 +141,23 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
        fromConnection:(AVCaptureConnection *)connection {
     
     //Convert sampleBuffer into an image.
-    UIImage *image = [GMVUtility sampleBufferTo32RGBA:sampleBuffer];
+    //MLKVisionImage *image = [[MLKVisionImage alloc] initWithBuffer:sampleBuffer];
+    CVImageBufferRef imageBuffer =
+    CMSampleBufferGetImageBuffer(sampleBuffer);
+    CIImage *ciImage = [CIImage imageWithCVPixelBuffer:imageBuffer];
+    CIContext *temporaryContext = [CIContext contextWithOptions:nil];
+    CGImageRef videoImage = [temporaryContext
+                             createCGImage:ciImage
+                             fromRect:CGRectMake(0, 0,
+                                                 CVPixelBufferGetWidth(imageBuffer),
+                                                 CVPixelBufferGetHeight(imageBuffer))];
     
+    UIImage *image = [[UIImage alloc] initWithCGImage:videoImage];
+    CGImageRelease(videoImage);
+
     //We're going to crop UIImage to the onscreen viewfinder's box size for faster processing.
     UIImage *croppedImg = nil;
-    //Rotate the image.
-    UIImage * portraitImage = [[UIImage alloc] initWithCGImage: image.CGImage
-                                                         scale: 1.0
-                                                   orientation: UIImageOrientationRight];
+    
     //Define the crop coordinates.
     CGRect screenRect = [[UIScreen mainScreen] bounds];
     CGFloat screenWidth = screenRect.size.width;
@@ -165,7 +171,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     
     CGFloat actualFrameWidth = 0;
     CGFloat actualFrameHeight = 0;
-    
+
     //Figure out which ratio is bigger and then subtract a value off the frame width in case some of the camera preview is hanging off screen.
     if(imageWidth/screenWidth < imageHeight/screenHeight){
         actualFrameWidth = frameWidth * imageWidth/screenWidth - frameWidth/(imageHeight/screenHeight);
@@ -176,104 +182,31 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     }
     //Define crop rectangle.
     CGRect cropRect = CGRectMake(imageWidth/2 - actualFrameWidth/2, imageHeight/2 - actualFrameHeight/2, actualFrameWidth, actualFrameHeight);
+
     //Crop image
-    croppedImg = [self croppIngimageByImageName:portraitImage toRect:cropRect];
-    
-    //Test code to place the resultant cropped image onto the display to verify sizing.
-    /*dispatch_async(dispatch_get_main_queue(), ^{
-     UIImage *previewImage = [[UIImage alloc] initWithCGImage: croppedImg.CGImage
-     scale: 1.0
-     orientation: UIImageOrientationRight];
-     self.imageView.image = previewImage;
-     });//*/
+    croppedImg = [self croppIngimageByImageName:image toRect:cropRect];
+
+    //Rotate the image.
+    MLKVisionImage *portraitImage = [[MLKVisionImage alloc] initWithImage:croppedImg];
+    portraitImage.orientation = UIImageOrientationRight;
     
     //Send the image through the barcode reader.
-    NSArray<GMVBarcodeFeature *> *barcodes = [self.barcodeDetector featuresInImage:croppedImg
-                                                                           options:nil];
-    //If no barcodes were detected then rotate the image 90 degrees. There is an issue with the barcode scanner not being able to scan data matrix in 2 orientations and rotation introduces at least one orientation to the mix.
-    if(sizeof barcodes == 0) {
-        croppedImg = [self rotateImage:croppedImg toOrientation:UIImageOrientationRight];
-        barcodes = [self.barcodeDetector featuresInImage:croppedImg
-                                                 options:nil];
-    }
-    
-    //Iterate through barcodes.
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        for (GMVBarcodeFeature *barcode in barcodes) {
-            NSLog(@"Barcode value: %@", barcode.rawValue);
-            
-            //If barcodeFormats == 0 then we're going to process with VIN validation, otherwise we'll just return the first result found and close out the barcode reader.
-            if([_barcodeFormats  isEqual: @0]) {
-                //If the barcode's length is less than 17 then we immediately know it's going to be invalid.
-                if([barcode.rawValue length] < 17) {
-                    continue;
-                }
-                NSString * vin = barcode.rawValue;
-                
-                //Remove characters from the set that are not part of standardized VIN structure.
-                NSCharacterSet *doNotWant = [NSCharacterSet characterSetWithCharactersInString:@"ioqIOQ"];
-                vin = [[vin componentsSeparatedByCharactersInSet: doNotWant] componentsJoinedByString: @""];
-                
-                //Cut length of VIN down to 17 characters. In testing some barcodes added an 18th character to the result that was invalid, but the rest of the VIN was correct.
-                vin = [vin substringToIndex: MIN(17, [vin length])];
-                
-                //If VIN is valid (check digit is correct) then cleanup the session and send results to Cordova.
-                if([self validateVin:vin] == true) {
-                    [ self cleanupCaptureSession];
-                    [_session stopRunning];
-                    [delegate sendResult:vin];
-                    break;
-                }
-            } else {
-                //Cleanup the session and send results to Cordova.
-                [ self cleanupCaptureSession];
-                [_session stopRunning];
-                [delegate sendResult:barcode.rawValue];
+    [self.barcodeDetector processImage:portraitImage completion:^(NSArray<MLKBarcode *> *barcodes,
+                                                          NSError *error) {
+        if (error != nil) {
+            return;
+        } else if (barcodes != nil) {
+            for (MLKBarcode *barcode in barcodes) {
+                NSLog(@"Barcode value: %@", barcode.rawValue);
+                [self cleanupCaptureSession];
+                [self->_session stopRunning];
+                [self->delegate sendResult:barcode];
                 break;
             }
         }
-    });
-}
-
-
-#pragma mark - VIN Validator
-
-- (int)transliterate:(NSString *) c {
-    NSString *values = @"0123456789.ABCDEFGH..JKLMN.P.R..STUVWXYZ";
-    NSRange range = [values rangeOfString:c];
+    }];
     
-    return (int)range.location % 10;
 }
-- (NSString *)getCheckDigit:(NSString *) vin {
-    NSString *map = @"0123456789X";
-    NSString *weights = @"8765432X098765432";
-    NSInteger *sum = 0;
-    for (int i = 0; i < 17; i++)
-    {
-        NSString * weight = [weights substringWithRange:NSMakeRange(i, 1)];
-        NSRange mapIndex = [map rangeOfString:weight];
-        NSString * vinChar = [vin substringWithRange:NSMakeRange(i, 1)];
-        NSInteger transliteration = [self transliterate:vinChar];
-        
-        sum = ((long)sum)+((long)transliteration * (unsigned long)mapIndex.location);
-    }
-    NSInteger checkIndex = ((int)sum) % 11;
-    NSString * checkDigit = [map substringWithRange:NSMakeRange(checkIndex, 1)];
-    return checkDigit;
-}
-
-- (Boolean)validateVin:(NSString *) vin {
-    vin = [vin substringToIndex: MIN(17, [vin length])];
-    if([vin length] != 17) {
-        return false;
-    }
-    
-    NSString *checkDigit = [vin substringWithRange:NSMakeRange(8, 1)];
-    NSString *correctCheckDigit = [self getCheckDigit:vin];
-    NSLog(@"VIN check digit is %@ and correct check digit is %@.", checkDigit, correctCheckDigit);
-    return checkDigit == correctCheckDigit;
-}
-
 
 #pragma mark - Camera setup
 
@@ -294,8 +227,8 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 - (void)setUpVideoProcessing {
     self.videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
     NSDictionary *rgbOutputSettings = @{
-                                        (__bridge NSString*)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)
-                                        };
+        (__bridge NSString*)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_32BGRA)
+    };
     [self.videoDataOutput setVideoSettings:rgbOutputSettings];
     
     if (![self.session canAddOutput:self.videoDataOutput]) {

@@ -3,7 +3,8 @@
 //  Dealr, Inc.
 //
 
-//#import <AVFoundation/AVFoundation.h>
+@import MLKitBarcodeScanning;
+
 #import "CDViOSScanner.h"
 
 @class UIViewController;
@@ -62,18 +63,18 @@
 
 }
 
--(void)sendResult:(NSString *)value
+- (void)sendResult:(MLKBarcode *)barcode
 {
     [self.cameraViewController dismissViewControllerAnimated:NO completion:nil];
     _scannerOpen = NO;
-
-    NSArray *response = @[value, @"", @""];
+    
+    NSArray *response = @[barcode.rawValue, @(barcode.format), @(barcode.valueType)];
     CDVPluginResult *pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:response];
 
     [self.commandDelegate sendPluginResult:pluginResult callbackId:_callback];
 }
 
--(void)closeScanner
+- (void)closeScanner
 {
     [self.cameraViewController dismissViewControllerAnimated:NO completion:nil];
     _scannerOpen = NO;

@@ -9,7 +9,7 @@
 
     <engines>
         <engine name="cordova" version=">=7.1.0"/>
-        <engine name="cordova-android" version=">=6.3.0"/>
+        <engine name="cordova-android" version=">=8.0.0"/>
         <engine name="cordova-ios" version=">=4.5.0"/>
     </engines>
     <platform name="ios">
@@ -21,22 +21,14 @@
         <framework src="Foundation.framework"/>
         <framework src="AVFoundation.framework"/>
         <framework src="UIKit.framework"/>
-        <framework src="CoreMedia.framework"/>
-        <framework src="CoreVideo.framework"/>
-        <framework src="CoreGraphics.framework"/>
-        <framework src="CoreImage.framework"/>
-        <framework src="Accelerate.framework"/>
-        <framework src="LocalAuthentication.framework"/>
-        <framework src="libc++.tbd"/>
-        <framework src="libz.tbd"/>
-        <framework src="libstdc++.tbd"/>
-        <framework src="libsqlite3.tbd"/>
-        <framework src="frameworks/BarcodeDetector.framework" custom="true"/>
-        <framework src="frameworks/GoogleMobileVision.framework" custom="true"/>
-        <framework src="frameworks/GoogleMVDataOutput.framework" custom="true"/>
-        <framework src="frameworks/GoogleToolboxForMac.framework" custom="true"/>
-        <framework src="frameworks/GTMSessionFetcher.framework" custom="true"/>
-        <framework src="frameworks/Protobuf.framework" custom="true"/>
+        <podspec>
+            <config>
+                <source url="https://cdn.cocoapods.org/"/>
+            </config>
+            <pods use-frameworks="true">
+                <pod name="GoogleMLKit/BarcodeScanning"/>
+            </pods>
+        </podspec>
         <header-file src="src/ios/CDViOSScanner.h"/>
         <source-file src="src/ios/CDViOSScanner.m"/>
         <header-file src="src/ios/CameraViewController.h"/>
@@ -99,13 +91,11 @@
         <resource-file src="src/android/res/drawable/torch_active.xml" target="res/drawable/torch_active.xml"/>
         <resource-file src="src/android/res/drawable/torch_inactive.xml" target="res/drawable/torch_inactive.xml"/>
 
-
         <framework src="com.android.support:support-v4:27.1.0" />
-        <framework src="com.google.android.gms:play-services-vision:17.0.2" />
-
-        <framework src="com.google.mlkit:barcode-scanning:16.0.3"/>
-
         <framework src="com.android.support:design:27.1.0" />
+
+        <framework src="com.google.android.gms:play-services-vision:17.0.2" />
+        <framework src="com.google.mlkit:barcode-scanning:16.0.3"/>
 
         <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference"/>
     </platform>
