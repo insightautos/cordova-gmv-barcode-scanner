@@ -23,8 +23,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewGroup;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.google.android.gms.common.images.Size;
@@ -35,49 +35,50 @@ import androidx.annotation.RequiresPermission;
 
 public class CameraSourcePreview extends ViewGroup {
     private static final String TAG = "CameraSourcePreview";
-
-    private Context mContext;
-    private SurfaceView mSurfaceView;
-    private View mViewFinderView;
-    private Button mTorchButton;
-    private boolean mStartRequested;
-    private boolean mSurfaceAvailable;
-    private CameraSource mCameraSource;
-    private boolean mFlashState = false;
-
+    private final Context _Context;
+    private final SurfaceView _SurfaceView;
+    private final View _ViewFinderView;
+    private final Button _TorchButton;
     public double ViewFinderWidth;
     public double ViewFinderHeight;
-
-    private GraphicOverlay mOverlay;
+    private boolean _StartRequested;
+    private boolean _SurfaceAvailable;
+    private CameraSource _CameraSource;
+    private boolean _FlashState = false;
+    private int _previewWidth = 320;
+    private int _previewHeight = 240;
+    private int _layoutWidth = 0;
+    private int _layoutHeight = 0;
+    private GraphicOverlay _Overlay;
 
     public CameraSourcePreview(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mContext = context;
-        mStartRequested = false;
-        mSurfaceAvailable = false;
+        _Context = context;
+        _StartRequested = false;
+        _SurfaceAvailable = false;
 
-        mSurfaceView = new SurfaceView(context);
-        mSurfaceView.getHolder().addCallback(new SurfaceCallback());
-        addView(mSurfaceView);
+        _SurfaceView = new SurfaceView(context);
+        _SurfaceView.getHolder().addCallback(new SurfaceCallback());
+        addView(_SurfaceView);
 
-        mViewFinderView = new View(mContext);
-        mViewFinderView.setBackgroundResource(getResources().getIdentifier("rounded_rectangle", "drawable", mContext.getPackageName()));
-        mViewFinderView.layout(0, 0, 500, 500);
-        addView(mViewFinderView);
+        _ViewFinderView = new View(_Context);
+        _ViewFinderView.setBackgroundResource(getResources().getIdentifier("rounded_rectangle", "drawable", _Context.getPackageName()));
+        _ViewFinderView.layout(0, 0, 500, 500);
+        addView(_ViewFinderView);
 
-        mTorchButton = new Button(mContext);
-        mTorchButton.setBackgroundResource(getResources().getIdentifier("torch_inactive", "drawable", mContext.getPackageName()));
-        mTorchButton.layout(0, 0, dpToPx(45), dpToPx(45));
-        mTorchButton.setMaxWidth(50);
-        mTorchButton.setRotation(90);
+        _TorchButton = new Button(_Context);
+        _TorchButton.setBackgroundResource(getResources().getIdentifier("torch_inactive", "drawable", _Context.getPackageName()));
+        _TorchButton.layout(0, 0, dpToPx(45), dpToPx(45));
+        _TorchButton.setMaxWidth(50);
+        _TorchButton.setRotation(90);
 
-        mTorchButton.setOnClickListener(new View.OnClickListener() {
+        _TorchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
-                    mCameraSource.setFlashMode(!mFlashState ? Camera.Parameters.FLASH_MODE_TORCH : Camera.Parameters.FLASH_MODE_OFF);
-                    mFlashState = !mFlashState;
-                    mTorchButton.setBackgroundResource(getResources().getIdentifier(mFlashState ? "torch_active" : "torch_inactive", "drawable", mContext.getPackageName()));
+                    _CameraSource.setFlashMode(!_FlashState ? Camera.Parameters.FLASH_MODE_TORCH : Camera.Parameters.FLASH_MODE_OFF);
+                    _FlashState = !_FlashState;
+                    _TorchButton.setBackgroundResource(getResources().getIdentifier(_FlashState ? "torch_active" : "torch_inactive", "drawable", _Context.getPackageName()));
                 } catch (Exception e) {
 
                 }
@@ -85,11 +86,11 @@ public class CameraSourcePreview extends ViewGroup {
         });
 
 
-        addView(mTorchButton);
+        addView(_TorchButton);
     }
 
     public int dpToPx(int dp) {
-        float density = mContext.getResources()
+        float density = _Context.getResources()
                 .getDisplayMetrics()
                 .density;
         return Math.round((float) dp * density);
@@ -101,150 +102,124 @@ public class CameraSourcePreview extends ViewGroup {
             stop();
         }
 
-        mCameraSource = cameraSource;
+        _CameraSource = cameraSource;
         //mCameraSource.ViewFinderHeight = ViewFinderHeight;
         //mCameraSource.ViewFinderWidth = ViewFinderWidth;
 
-        if (mCameraSource != null) {
-            mStartRequested = true;
+        if (_CameraSource != null) {
+            _StartRequested = true;
             startIfReady();
         }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     public void start(CameraSource cameraSource, GraphicOverlay overlay) throws IOException, SecurityException {
-        mOverlay = overlay;
+        _Overlay = overlay;
         start(cameraSource);
     }
 
     public void stop() {
-        if (mCameraSource != null) {
-            mCameraSource.stop();
+        if (_CameraSource != null) {
+            _CameraSource.stop();
         }
     }
 
     public void release() {
-        if (mCameraSource != null) {
-            mCameraSource.release();
-            mCameraSource = null;
+        if (_CameraSource != null) {
+            _CameraSource.release();
+            _CameraSource = null;
         }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
     private void startIfReady() throws IOException, SecurityException {
-        if (mStartRequested && mSurfaceAvailable) {
-            mCameraSource.start(mSurfaceView.getHolder());
-            if (mOverlay != null) {
-                Size size = mCameraSource.getPreviewSize();
+        if (_StartRequested && _SurfaceAvailable) {
+            _CameraSource.start(_SurfaceView.getHolder());
+            if (_Overlay != null) {
+                Size size = _CameraSource.getPreviewSize();
+                SurfaceLayout();
                 int min = Math.min(size.getWidth(), size.getHeight());
                 int max = Math.max(size.getWidth(), size.getHeight());
                 if (isPortraitMode()) {
                     // Swap width and height sizes when in portrait, since it will be rotated by
                     // 90 degrees
-                    mOverlay.setCameraInfo(min, max, mCameraSource.getCameraFacing());
+                    _Overlay.setCameraInfo(min, max, _CameraSource.getCameraFacing());
                 } else {
-                    mOverlay.setCameraInfo(max, min, mCameraSource.getCameraFacing());
+                    _Overlay.setCameraInfo(max, min, _CameraSource.getCameraFacing());
                 }
-                mOverlay.clear();
+                _Overlay.clear();
             }
-            mStartRequested = false;
+            _StartRequested = false;
         }
     }
 
-    private class SurfaceCallback implements SurfaceHolder.Callback {
-        @Override
-        public void surfaceCreated(SurfaceHolder surface) {
-            mSurfaceAvailable = true;
-            try {
-                startIfReady();
-            } catch (SecurityException se) {
-                Log.e(TAG, "Do not have permission to start the camera", se);
-            } catch (IOException e) {
-                Log.e(TAG, "Could not start camera source.", e);
-            }
-        }
-
-        @Override
-        public void surfaceDestroyed(SurfaceHolder surface) {
-            mSurfaceAvailable = false;
-        }
-
-        @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        }
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        int width = 320;
-        int height = 240;
-
-        final int layoutWidth = right - left;
-        final int layoutHeight = bottom - top;
-
-        if (mCameraSource != null) {
-            Size size = mCameraSource.getPreviewSize();
+    private void SurfaceLayout() {
+        if (_CameraSource != null) {
+            Size size = _CameraSource.getPreviewSize();
             if (size != null) {
-                width = size.getWidth();
-                height = size.getHeight();
+                _previewWidth = size.getWidth();
+                _previewHeight = size.getHeight();
             }
-            //mCameraSource.viewWidth = width;
-            //mCameraSource.viewHeight = height;
         }
 
         // Swap width and height sizes when in portrait, since it will be rotated 90 degrees
         if (isPortraitMode()) {
-            int tmp = width;
+            int tmp = _previewWidth;
             //noinspection SuspiciousNameCombination
-            width = height;
-            height = tmp;
+            _previewWidth = _previewHeight;
+            _previewHeight = tmp;
         }
 
         // Computes height and width for potentially doing fit width.
-
         int childWidth;
         int childHeight;
         int childXOffset = 0;
         int childYOffset = 0;
-        float widthRatio = (float) layoutWidth / (float) width;
-        float heightRatio = (float) layoutHeight / (float) height;
+        float widthRatio = (float) _layoutWidth / (float) _previewWidth;
+        float heightRatio = (float) _layoutHeight / (float) _previewHeight;
 
         // To fill the view with the camera preview, while also preserving the correct aspect ratio,
         // it is usually necessary to slightly oversize the child and to crop off portions along one
         // of the dimensions.  We scale up based on the dimension requiring the most correction, and
         // compute a crop offset for the other dimension.
         if (widthRatio > heightRatio) {
-            childWidth = layoutWidth;
-            childHeight = (int) ((float) height * widthRatio);
-            childYOffset = (layoutHeight - childHeight) / 2;
+            childWidth = _layoutWidth;
+            childHeight = (int) ((float) _previewHeight * widthRatio);
         } else {
-            childWidth = (int) ((float) width * heightRatio);
-            childHeight = layoutHeight;
-            childXOffset = (layoutWidth - childWidth) / 2;
+            childWidth = (int) ((float) _previewWidth * heightRatio);
+            childHeight = _layoutHeight;
         }
+
+        childYOffset = (_layoutHeight - childHeight) / 2;
+        childXOffset = (_layoutWidth - childWidth) / 2;
 
         for (int i = 0; i < getChildCount(); ++i) {
             // One dimension will be cropped.  We shift child over or up by this offset and adjust
             // the size to maintain the proper aspect ratio.
-            getChildAt(i).layout(
-                    -1 * childXOffset, -1 * childYOffset,
-                    childWidth - childXOffset, childHeight - childYOffset);
+            getChildAt(i).layout(-1 * childXOffset, -1 * childYOffset, childWidth - childXOffset, childHeight - childYOffset);
         }
 
-        mSurfaceView.layout(childXOffset, childYOffset, childWidth, childHeight);
+        _SurfaceView.layout(childXOffset, childYOffset, childWidth + childXOffset, childHeight + childYOffset);
 
+        int actualWidth = (int) (_layoutWidth * ViewFinderWidth);
+        int actualHeight = (int) (_layoutHeight * ViewFinderHeight);
 
-        int actualWidth = (int) (layoutWidth * ViewFinderWidth);
-        int actualHeight = (int) (layoutHeight * ViewFinderHeight);
-
-        mViewFinderView.layout(layoutWidth / 2 - actualWidth / 2, layoutHeight / 2 - actualHeight / 2, layoutWidth / 2 + actualWidth / 2, layoutHeight / 2 + actualHeight / 2);
+        _ViewFinderView.layout(_layoutWidth / 2 - actualWidth / 2, _layoutHeight / 2 - actualHeight / 2, _layoutWidth / 2 + actualWidth / 2, _layoutHeight / 2 + actualHeight / 2);
 
         int buttonSize = dpToPx(45);
-        int torchLeft = layoutWidth / 2 + actualWidth / 2 + (layoutWidth - (layoutWidth / 2 + actualWidth / 2)) / 2 - buttonSize / 2;
-        int torchTop = layoutHeight - (layoutWidth - torchLeft);
+        int torchLeft = _layoutWidth / 2 + actualWidth / 2 + (_layoutWidth - (_layoutWidth / 2 + actualWidth / 2)) / 2 - buttonSize / 2;
+        int torchTop = _layoutHeight - (_layoutWidth - torchLeft);
 
         //mTorchButton.layout(torchLeft, torchTop, torchLeft + buttonSize, torchTop + buttonSize);
-        mTorchButton.layout(torchLeft - buttonSize / 2, torchTop - buttonSize / 2, torchLeft + buttonSize / 2, torchTop + buttonSize / 2);
+        _TorchButton.layout(torchLeft - buttonSize / 2, torchTop - buttonSize / 2, torchLeft + buttonSize / 2, torchTop + buttonSize / 2);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        _layoutWidth = right - left;
+        _layoutHeight = bottom - top;
+
+        SurfaceLayout();
 
         try {
             startIfReady();
@@ -256,7 +231,7 @@ public class CameraSourcePreview extends ViewGroup {
     }
 
     private boolean isPortraitMode() {
-        int orientation = mContext.getResources().getConfiguration().orientation;
+        int orientation = _Context.getResources().getConfiguration().orientation;
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             return false;
         }
@@ -266,5 +241,29 @@ public class CameraSourcePreview extends ViewGroup {
 
         Log.d(TAG, "isPortraitMode returning false by default");
         return false;
+    }
+
+    private class SurfaceCallback implements SurfaceHolder.Callback {
+        @Override
+        public void surfaceCreated(SurfaceHolder surface) {
+            _SurfaceAvailable = true;
+
+            try {
+                startIfReady();
+            } catch (SecurityException se) {
+                Log.e(TAG, "Do not have permission to start the camera", se);
+            } catch (IOException e) {
+                Log.e(TAG, "Could not start camera source.", e);
+            }
+        }
+
+        @Override
+        public void surfaceDestroyed(SurfaceHolder surface) {
+            _SurfaceAvailable = false;
+        }
+
+        @Override
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        }
     }
 }

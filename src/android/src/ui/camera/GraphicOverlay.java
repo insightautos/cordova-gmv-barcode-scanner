@@ -46,13 +46,13 @@ import java.util.Vector;
  * </ol>
  */
 public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
-    private final Object mLock = new Object();
-    private int mPreviewWidth;
-    private float mWidthScaleFactor = 1.0f;
-    private int mPreviewHeight;
-    private float mHeightScaleFactor = 1.0f;
-    private int mFacing = CameraSource.CAMERA_FACING_BACK;
-    private Set<T> mGraphics = new HashSet<>();
+    private final Object _Lock = new Object();
+    private int _PreviewWidth;
+    private float _WidthScaleFactor = 1.0f;
+    private int _PreviewHeight;
+    private float _HeightScaleFactor = 1.0f;
+    private int _Facing = CameraSource.CAMERA_FACING_BACK;
+    private Set<T> _Graphics = new HashSet<>();
 
     /**
      * Base class for a custom graphics object to be rendered within the graphic overlay.  Subclass
@@ -60,10 +60,10 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
      * graphics element.  Add instances to the overlay using {@link GraphicOverlay#add(Graphic)}.
      */
     public static abstract class Graphic {
-        private GraphicOverlay mOverlay;
+        private GraphicOverlay _Overlay;
 
         public Graphic(GraphicOverlay overlay) {
-            mOverlay = overlay;
+            _Overlay = overlay;
         }
 
         /**
@@ -85,14 +85,14 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
          * scale.
          */
         public float scaleX(float horizontal) {
-            return horizontal * mOverlay.mWidthScaleFactor;
+            return horizontal * _Overlay._WidthScaleFactor;
         }
 
         /**
          * Adjusts a vertical value of the supplied value from the preview scale to the view scale.
          */
         public float scaleY(float vertical) {
-            return vertical * mOverlay.mHeightScaleFactor;
+            return vertical * _Overlay._HeightScaleFactor;
         }
 
         /**
@@ -100,8 +100,8 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
          * system.
          */
         public float translateX(float x) {
-            if (mOverlay.mFacing == CameraSource.CAMERA_FACING_FRONT) {
-                return mOverlay.getWidth() - scaleX(x);
+            if (_Overlay._Facing == CameraSource.CAMERA_FACING_FRONT) {
+                return _Overlay.getWidth() - scaleX(x);
             } else {
                 return scaleX(x);
             }
@@ -116,7 +116,7 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
         }
 
         public void postInvalidate() {
-            mOverlay.postInvalidate();
+            _Overlay.postInvalidate();
         }
     }
 
@@ -128,8 +128,8 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
      * Removes all graphics from the overlay.
      */
     public void clear() {
-        synchronized (mLock) {
-            mGraphics.clear();
+        synchronized (_Lock) {
+            _Graphics.clear();
         }
         postInvalidate();
     }
@@ -138,8 +138,8 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
      * Adds a graphic to the overlay.
      */
     public void add(T graphic) {
-        synchronized (mLock) {
-            mGraphics.add(graphic);
+        synchronized (_Lock) {
+            _Graphics.add(graphic);
         }
         postInvalidate();
     }
@@ -148,8 +148,8 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
      * Removes a graphic from the overlay.
      */
     public void remove(T graphic) {
-        synchronized (mLock) {
-            mGraphics.remove(graphic);
+        synchronized (_Lock) {
+            _Graphics.remove(graphic);
         }
         postInvalidate();
     }
@@ -160,8 +160,8 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
      * @return list of all active graphics.
      */
     public List<T> getGraphics() {
-        synchronized (mLock) {
-            return new Vector(mGraphics);
+        synchronized (_Lock) {
+            return new Vector(_Graphics);
         }
     }
 
@@ -169,14 +169,14 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
      * Returns the horizontal scale factor.
      */
     public float getWidthScaleFactor() {
-        return mWidthScaleFactor;
+        return _WidthScaleFactor;
     }
 
     /**
      * Returns the vertical scale factor.
      */
     public float getHeightScaleFactor() {
-        return mHeightScaleFactor;
+        return _HeightScaleFactor;
     }
 
     /**
@@ -184,10 +184,10 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
      * image coordinates later.
      */
     public void setCameraInfo(int previewWidth, int previewHeight, int facing) {
-        synchronized (mLock) {
-            mPreviewWidth = previewWidth;
-            mPreviewHeight = previewHeight;
-            mFacing = facing;
+        synchronized (_Lock) {
+            _PreviewWidth = previewWidth;
+            _PreviewHeight = previewHeight;
+            _Facing = facing;
         }
         postInvalidate();
     }
@@ -199,13 +199,13 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        synchronized (mLock) {
-            if ((mPreviewWidth != 0) && (mPreviewHeight != 0)) {
-                mWidthScaleFactor = (float) canvas.getWidth() / (float) mPreviewWidth;
-                mHeightScaleFactor = (float) canvas.getHeight() / (float) mPreviewHeight;
+        synchronized (_Lock) {
+            if ((_PreviewWidth != 0) && (_PreviewHeight != 0)) {
+                _WidthScaleFactor = (float) canvas.getWidth() / (float) _PreviewWidth;
+                _HeightScaleFactor = (float) canvas.getHeight() / (float) _PreviewHeight;
             }
 
-            for (Graphic graphic : mGraphics) {
+            for (Graphic graphic : _Graphics) {
                 graphic.draw(canvas);
             }
         }

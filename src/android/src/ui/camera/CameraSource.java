@@ -15,15 +15,10 @@
  */
 package com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera;
 
-// ----------------------------------------------------------------------------
-// |  Android Imports
-// ----------------------------------------------------------------------------
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -35,20 +30,10 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresPermission;
-import androidx.annotation.StringDef;
-
-// ----------------------------------------------------------------------------
-// |  Google Imports
-// ----------------------------------------------------------------------------
 import com.google.android.gms.common.images.Size;
-
 import com.google.mlkit.vision.common.InputImage;
+import com.mobisys.cordova.plugins.mlkit.barcode.scanner.BarcodeScanningProcessor;
 
-// ----------------------------------------------------------------------------
-// |  Java Imports
-// ----------------------------------------------------------------------------
 import java.io.IOException;
 import java.lang.Thread.State;
 import java.lang.annotation.Retention;
@@ -59,10 +44,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// ----------------------------------------------------------------------------
-// |  Our Imports
-// ----------------------------------------------------------------------------
-import com.mobisys.cordova.plugins.mlkit.barcode.scanner.BarcodeScanningProcessor;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
+import androidx.annotation.StringDef;
 
 // The CameraSource send the preview frames to the barcode detector.
 @SuppressWarnings("deprecation")
@@ -92,9 +76,8 @@ public class CameraSource {
      * same aspect ratio.
      */
     private static final float ASPECT_RATIO_TOLERANCE = 0.01f;
-
-    private Context _Context;
     private final Object _CameraLock = new Object();
+    private Context _Context;
     private Camera _Camera;
     private int _Facing = CAMERA_FACING_BACK;
     private int _Rotation;
@@ -108,109 +91,68 @@ public class CameraSource {
     private SurfaceTexture _DummySurfaceTexture;
     private Thread _ProcessingThread;
     private FrameProcessingRunnable _FrameProcessor;
-    private Map<byte[], ByteBuffer> _BytesToByteBuffer = new HashMap<>();
+    private final Map<byte[], ByteBuffer> _BytesToByteBuffer = new HashMap<>();
     private BarcodeScanningProcessor _ScanningProcessor;
-
-    // ----------------------------------------------------------------------------
-    // | Helpers
-    // ----------------------------------------------------------------------------
-    @StringDef({Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE, Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO,
-            Camera.Parameters.FOCUS_MODE_AUTO, Camera.Parameters.FOCUS_MODE_EDOF, Camera.Parameters.FOCUS_MODE_FIXED,
-            Camera.Parameters.FOCUS_MODE_INFINITY, Camera.Parameters.FOCUS_MODE_MACRO})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface FocusMode {
-    }
-
-    ;
-
-    @StringDef({Camera.Parameters.FLASH_MODE_ON, Camera.Parameters.FLASH_MODE_OFF, Camera.Parameters.FLASH_MODE_AUTO,
-            Camera.Parameters.FLASH_MODE_RED_EYE, Camera.Parameters.FLASH_MODE_TORCH})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface FlashMode {
-    }
-
-    ;
-
-    public interface ShutterCallback {
-        void onShutter();
-    }
-
-    public interface PictureCallback {
-        void onPictureTaken(byte[] data);
-    }
-
-    public interface AutoFocusCallback {
-        void onAutoFocus(boolean success);
-    }
-
-    public interface AutoFocusMoveCallback {
-        void onAutoFocusMoving(boolean start);
-    }
-
-    // ----------------------------------------------------------------------------
-    // | Builder
-    // ----------------------------------------------------------------------------
-    public static class Builder {
-        private CameraSource _CameraSource = new CameraSource();
-
-        public Builder(Context context, BarcodeScanningProcessor scanningProcessor) {
-            if (context == null) {
-                throw new IllegalArgumentException("No context supplied.");
-            }
-            if (scanningProcessor == null) {
-                throw new IllegalArgumentException("No processor supplied.");
-            }
-
-            _CameraSource._ScanningProcessor = scanningProcessor;
-            _CameraSource._Context = context;
-        }
-
-        public Builder setRequestedFps(float fps) {
-            if (fps <= 0) {
-                throw new IllegalArgumentException("Invalid fps: " + fps);
-            }
-            _CameraSource._RequestedFps = fps;
-            return this;
-        }
-
-        public Builder setFocusMode(@FocusMode String mode) {
-            _CameraSource._FocusMode = mode;
-            return this;
-        }
-
-        public Builder setFlashMode(@FlashMode String mode) {
-            _CameraSource._FlashMode = mode;
-            return this;
-        }
-
-        public Builder setRequestedPreviewSize(int width, int height) {
-            final int MAX = 1000000;
-            if ((width <= 0) || (width > MAX) || (height <= 0) || (height > MAX)) {
-                throw new IllegalArgumentException("Invalid preview size: " + width + "x" + height);
-            }
-            _CameraSource._RequestedPreviewWidth = width;
-            _CameraSource._RequestedPreviewHeight = height;
-            return this;
-        }
-
-        public Builder setFacing(int facing) {
-            if ((facing != CAMERA_FACING_BACK) && (facing != CAMERA_FACING_FRONT)) {
-                throw new IllegalArgumentException("Invalid camera: " + facing);
-            }
-            _CameraSource._Facing = facing;
-            return this;
-        }
-
-        public CameraSource build() {
-            _CameraSource._FrameProcessor = _CameraSource.new FrameProcessingRunnable();
-            return _CameraSource;
-        }
-    }
 
     // ----------------------------------------------------------------------------
     // | Constructor
     // ----------------------------------------------------------------------------
     private CameraSource() { // Constructor is private to force creation using the builder class.
+    }
+
+    private static int getIdForRequestedCamera(int p_Facing) {
+        CameraInfo cameraInfo = new CameraInfo();
+        for (int i = 0; i < Camera.getNumberOfCameras(); ++i) {
+            Camera.getCameraInfo(i, cameraInfo);
+            if (cameraInfo.facing == p_Facing) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static SizePair selectSizePair(Camera p_Camera, int p_DesiredWidth, int p_DesiredHeight) {
+        List<SizePair> validPreviewSizes = generateValidPreviewSizeList(p_Camera);
+
+        SizePair selectedPair = null;
+        int minDiff = Integer.MAX_VALUE;
+        for (SizePair sizePair : validPreviewSizes) {
+            Size size = sizePair.previewSize();
+            int diff = Math.abs(size.getWidth() - p_DesiredWidth) + Math.abs(size.getHeight() - p_DesiredHeight);
+            if (diff < minDiff) {
+                selectedPair = sizePair;
+                minDiff = diff;
+            }
+        }
+
+        return selectedPair;
+    }
+
+    private static List<SizePair> generateValidPreviewSizeList(Camera p_Camera) {
+        Camera.Parameters parameters = p_Camera.getParameters();
+        List<android.hardware.Camera.Size> supportedPreviewSizes = parameters.getSupportedPreviewSizes();
+        List<android.hardware.Camera.Size> supportedPictureSizes = parameters.getSupportedPictureSizes();
+        List<SizePair> validPreviewSizes = new ArrayList<>();
+        for (android.hardware.Camera.Size previewSize : supportedPreviewSizes) {
+            float previewAspectRatio = (float) previewSize.width / (float) previewSize.height;
+            for (android.hardware.Camera.Size pictureSize : supportedPictureSizes) {
+                float pictureAspectRatio = (float) pictureSize.width / (float) pictureSize.height;
+                if (Math.abs(previewAspectRatio - pictureAspectRatio) < ASPECT_RATIO_TOLERANCE) {
+                    validPreviewSizes.add(new SizePair(previewSize, pictureSize));
+                    break;
+                }
+            }
+        }
+
+        if (validPreviewSizes.size() == 0) {
+            Log.w(TAG, "No preview sizes have a corresponding same-aspect-ratio picture size");
+            for (android.hardware.Camera.Size previewSize : supportedPreviewSizes) {
+                // The null picture size will let us know that we shouldn't set a picture size.
+                validPreviewSizes.add(new SizePair(previewSize, null));
+            }
+        }
+
+        return validPreviewSizes;
     }
 
     // ----------------------------------------------------------------------------
@@ -446,21 +388,6 @@ public class CameraSource {
         return true;
     }
 
-    // ----------------------------------------------------------------------------
-    // | Private Functions
-    // ----------------------------------------------------------------------------
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    private class CameraAutoFocusMoveCallback implements Camera.AutoFocusMoveCallback {
-        private AutoFocusMoveCallback _Delegate;
-
-        @Override
-        public void onAutoFocusMoving(boolean start, Camera camera) {
-            if (_Delegate != null) {
-                _Delegate.onAutoFocusMoving(start);
-            }
-        }
-    }
-
     @SuppressLint("InlinedApi")
     private Camera createCamera() {
         int requestedCameraId = getIdForRequestedCamera(_Facing);
@@ -534,61 +461,6 @@ public class CameraSource {
         camera.addCallbackBuffer(createPreviewBuffer(_PreviewSize));
 
         return camera;
-    }
-
-    private static int getIdForRequestedCamera(int p_Facing) {
-        CameraInfo cameraInfo = new CameraInfo();
-        for (int i = 0; i < Camera.getNumberOfCameras(); ++i) {
-            Camera.getCameraInfo(i, cameraInfo);
-            if (cameraInfo.facing == p_Facing) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private static SizePair selectSizePair(Camera p_Camera, int p_DesiredWidth, int p_DesiredHeight) {
-        List<SizePair> validPreviewSizes = generateValidPreviewSizeList(p_Camera);
-
-        SizePair selectedPair = null;
-        int minDiff = Integer.MAX_VALUE;
-        for (SizePair sizePair : validPreviewSizes) {
-            Size size = sizePair.previewSize();
-            int diff = Math.abs(size.getWidth() - p_DesiredWidth) + Math.abs(size.getHeight() - p_DesiredHeight);
-            if (diff < minDiff) {
-                selectedPair = sizePair;
-                minDiff = diff;
-            }
-        }
-
-        return selectedPair;
-    }
-
-    private static List<SizePair> generateValidPreviewSizeList(Camera p_Camera) {
-        Camera.Parameters parameters = p_Camera.getParameters();
-        List<android.hardware.Camera.Size> supportedPreviewSizes = parameters.getSupportedPreviewSizes();
-        List<android.hardware.Camera.Size> supportedPictureSizes = parameters.getSupportedPictureSizes();
-        List<SizePair> validPreviewSizes = new ArrayList<>();
-        for (android.hardware.Camera.Size previewSize : supportedPreviewSizes) {
-            float previewAspectRatio = (float) previewSize.width / (float) previewSize.height;
-            for (android.hardware.Camera.Size pictureSize : supportedPictureSizes) {
-                float pictureAspectRatio = (float) pictureSize.width / (float) pictureSize.height;
-                if (Math.abs(previewAspectRatio - pictureAspectRatio) < ASPECT_RATIO_TOLERANCE) {
-                    validPreviewSizes.add(new SizePair(previewSize, pictureSize));
-                    break;
-                }
-            }
-        }
-
-        if (validPreviewSizes.size() == 0) {
-            Log.w(TAG, "No preview sizes have a corresponding same-aspect-ratio picture size");
-            for (android.hardware.Camera.Size previewSize : supportedPreviewSizes) {
-                // The null picture size will let us know that we shouldn't set a picture size.
-                validPreviewSizes.add(new SizePair(previewSize, null));
-            }
-        }
-
-        return validPreviewSizes;
     }
 
     private int[] selectPreviewFpsRange(Camera p_Camera, float p_DesiredPreviewFps) {
@@ -666,6 +538,134 @@ public class CameraSource {
     }
 
     // ----------------------------------------------------------------------------
+    // | Helpers
+    // ----------------------------------------------------------------------------
+    @StringDef({Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE, Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO,
+            Camera.Parameters.FOCUS_MODE_AUTO, Camera.Parameters.FOCUS_MODE_EDOF, Camera.Parameters.FOCUS_MODE_FIXED,
+            Camera.Parameters.FOCUS_MODE_INFINITY, Camera.Parameters.FOCUS_MODE_MACRO})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface FocusMode {
+    }
+
+    @StringDef({Camera.Parameters.FLASH_MODE_ON, Camera.Parameters.FLASH_MODE_OFF, Camera.Parameters.FLASH_MODE_AUTO,
+            Camera.Parameters.FLASH_MODE_RED_EYE, Camera.Parameters.FLASH_MODE_TORCH})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface FlashMode {
+    }
+
+    public interface ShutterCallback {
+        void onShutter();
+    }
+
+    public interface PictureCallback {
+        void onPictureTaken(byte[] data);
+    }
+
+    public interface AutoFocusCallback {
+        void onAutoFocus(boolean success);
+    }
+
+    public interface AutoFocusMoveCallback {
+        void onAutoFocusMoving(boolean start);
+    }
+
+    // ----------------------------------------------------------------------------
+    // | Builder
+    // ----------------------------------------------------------------------------
+    public static class Builder {
+        private final CameraSource _CameraSource = new CameraSource();
+
+        public Builder(Context context, BarcodeScanningProcessor scanningProcessor) {
+            if (context == null) {
+                throw new IllegalArgumentException("No context supplied.");
+            }
+            if (scanningProcessor == null) {
+                throw new IllegalArgumentException("No processor supplied.");
+            }
+
+            _CameraSource._ScanningProcessor = scanningProcessor;
+            _CameraSource._Context = context;
+        }
+
+        public Builder setRequestedFps(float fps) {
+            if (fps <= 0) {
+                throw new IllegalArgumentException("Invalid fps: " + fps);
+            }
+            _CameraSource._RequestedFps = fps;
+            return this;
+        }
+
+        public Builder setFocusMode(@FocusMode String mode) {
+            _CameraSource._FocusMode = mode;
+            return this;
+        }
+
+        public Builder setFlashMode(@FlashMode String mode) {
+            _CameraSource._FlashMode = mode;
+            return this;
+        }
+
+        public Builder setRequestedPreviewSize(int width, int height) {
+            final int MAX = 1000000;
+            if ((width <= 0) || (width > MAX) || (height <= 0) || (height > MAX)) {
+                throw new IllegalArgumentException("Invalid preview size: " + width + "x" + height);
+            }
+            _CameraSource._RequestedPreviewWidth = width;
+            _CameraSource._RequestedPreviewHeight = height;
+            return this;
+        }
+
+        public Builder setFacing(int facing) {
+            if ((facing != CAMERA_FACING_BACK) && (facing != CAMERA_FACING_FRONT)) {
+                throw new IllegalArgumentException("Invalid camera: " + facing);
+            }
+            _CameraSource._Facing = facing;
+            return this;
+        }
+
+        public CameraSource build() {
+            _CameraSource._FrameProcessor = _CameraSource.new FrameProcessingRunnable();
+            return _CameraSource;
+        }
+    }
+
+    private static class SizePair {
+        private final Size _Preview;
+        private Size _Picture;
+
+        public SizePair(android.hardware.Camera.Size p_PreviewSize, android.hardware.Camera.Size p_PictureSize) {
+            _Preview = new Size(p_PreviewSize.width, p_PreviewSize.height);
+            if (p_PictureSize != null) {
+                _Picture = new Size(p_PictureSize.width, p_PictureSize.height);
+            }
+        }
+
+        public Size previewSize() {
+            return _Preview;
+        }
+
+        @SuppressWarnings("unused")
+        public Size pictureSize() {
+            return _Picture;
+        }
+    }
+
+    // ----------------------------------------------------------------------------
+    // | Private Functions
+    // ----------------------------------------------------------------------------
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private class CameraAutoFocusMoveCallback implements Camera.AutoFocusMoveCallback {
+        private AutoFocusMoveCallback _Delegate;
+
+        @Override
+        public void onAutoFocusMoving(boolean start, Camera camera) {
+            if (_Delegate != null) {
+                _Delegate.onAutoFocusMoving(start);
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------------
     // | Helper Classes
     // ----------------------------------------------------------------------------
     private class PictureStartCallback implements Camera.ShutterCallback {
@@ -703,27 +703,6 @@ public class CameraSource {
             if (_Delegate != null) {
                 _Delegate.onAutoFocus(p_Success);
             }
-        }
-    }
-
-    private static class SizePair {
-        private Size _Preview;
-        private Size _Picture;
-
-        public SizePair(android.hardware.Camera.Size p_PreviewSize, android.hardware.Camera.Size p_PictureSize) {
-            _Preview = new Size(p_PreviewSize.width, p_PreviewSize.height);
-            if (p_PictureSize != null) {
-                _Picture = new Size(p_PictureSize.width, p_PictureSize.height);
-            }
-        }
-
-        public Size previewSize() {
-            return _Preview;
-        }
-
-        @SuppressWarnings("unused")
-        public Size pictureSize() {
-            return _Picture;
         }
     }
 

@@ -15,10 +15,6 @@
  */
 package com.mobisys.cordova.plugins.mlkit.barcode.scanner;
 
-// ----------------------------------------------------------------------------
-// |  Android Imports
-// ----------------------------------------------------------------------------
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -38,55 +34,41 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.WindowManager;
 
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.appcompat.app.AppCompatActivity;
-
-// ----------------------------------------------------------------------------
-// |  Google Imports
-// ----------------------------------------------------------------------------
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.material.snackbar.Snackbar;
-
-
-// ----------------------------------------------------------------------------
-// |  Java Imports
-// ----------------------------------------------------------------------------
-import java.io.IOException;
-import java.io.Serializable;
-
-// ----------------------------------------------------------------------------
-// |  Our Imports
-// ----------------------------------------------------------------------------
-import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.CameraSource;
-import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.CameraSourcePreview;
-import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.GraphicOverlay;
 import com.google.mlkit.vision.barcode.Barcode;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
+import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.CameraSource;
+import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.CameraSourcePreview;
+import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.GraphicOverlay;
+
+import java.io.IOException;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 public final class BarcodeCaptureActivity extends AppCompatActivity
         implements BarcodeScanningProcessor.BarcodeUpdateListener {
-    // ----------------------------------------------------------------------------
-    // |  Public Properties
-    // ----------------------------------------------------------------------------
-    public Integer DetectionTypes;
-    public double ViewFinderWidth = .5;
-    public double ViewFinderHeight = .7;
     public static final String BarcodeFormat = "MLKitBarcodeFormat";
     public static final String BarcodeType = "MLKitBarcodeType";
     public static final String BarcodeValue = "MLKitBarcodeValue";
-
     // ----------------------------------------------------------------------------
     // |  Private Properties
     // ----------------------------------------------------------------------------
     private static final String TAG = "Barcode-reader";
     private static final int RC_HANDLE_GMS = 9001;
     private static final int RC_HANDLE_CAMERA_PERM = 2;
-
+    // ----------------------------------------------------------------------------
+    // |  Public Properties
+    // ----------------------------------------------------------------------------
+    public Integer DetectionTypes;
+    public double ViewFinderWidth = .5;
+    public double ViewFinderHeight = .7;
     private CameraSource _CameraSource;
     private CameraSourcePreview _Preview;
     private GraphicOverlay<BarcodeGraphic> _GraphicOverlay;

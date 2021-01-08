@@ -1,14 +1,5 @@
 package com.mobisys.cordova.plugins.mlkit.barcode.scanner;
 
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.CordovaInterface;
-
-import org.apache.cordova.PluginResult;
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,15 +7,22 @@ import android.util.Log;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 
 /**
  * This class echoes a string called from JavaScript.
  */
 public class MLKitBarcodeScanner extends CordovaPlugin {
 
-    private CallbackContext _CallbackContext;
-
     private static final int RC_BARCODE_CAPTURE = 9001;
+    private CallbackContext _CallbackContext;
 
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
@@ -37,8 +35,8 @@ public class MLKitBarcodeScanner extends CordovaPlugin {
         if (action.equals("startScan")) {
 
             class OneShotTask implements Runnable {
-                private Context context;
-                private JSONArray args;
+                private final Context context;
+                private final JSONArray args;
 
                 private OneShotTask(Context ctx, JSONArray as) {
                     context = ctx;

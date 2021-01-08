@@ -21,7 +21,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 
 import com.google.mlkit.vision.barcode.Barcode;
-
 import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.GraphicOverlay;
 
 /**
@@ -30,19 +29,16 @@ import com.mobisys.cordova.plugins.mlkit.barcode.scanner.ui.camera.GraphicOverla
  */
 public class BarcodeGraphic extends GraphicOverlay.Graphic {
 
-    private int _Id;
-
-    private static final int COLOR_CHOICES[] = {
+    private static final int[] COLOR_CHOICES = {
             Color.BLUE,
             Color.CYAN,
             Color.GREEN
     };
-
     private static int mCurrentColorIndex = 0;
-
-    private Paint _RectPaint;
-    private Paint _TextPaint;
     private static volatile Barcode _Barcode;
+    private int _Id;
+    private final Paint _RectPaint;
+    private final Paint _TextPaint;
 
     BarcodeGraphic(GraphicOverlay overlay) {
         super(overlay);
