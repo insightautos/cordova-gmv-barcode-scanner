@@ -103,8 +103,8 @@ public class CameraSourcePreview extends ViewGroup {
         }
 
         _CameraSource = cameraSource;
-        //mCameraSource.ViewFinderHeight = ViewFinderHeight;
-        //mCameraSource.ViewFinderWidth = ViewFinderWidth;
+        _CameraSource.ViewFinderHeight = ViewFinderHeight;
+        _CameraSource.ViewFinderWidth = ViewFinderWidth;
 
         if (_CameraSource != null) {
             _StartRequested = true;

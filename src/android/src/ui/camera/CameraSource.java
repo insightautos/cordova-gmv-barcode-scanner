@@ -19,11 +19,19 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.os.Build;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import android.renderscript.Type;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -77,6 +85,9 @@ public class CameraSource {
      */
     private static final float ASPECT_RATIO_TOLERANCE = 0.01f;
     private final Object _CameraLock = new Object();
+    private final Map<byte[], ByteBuffer> _BytesToByteBuffer = new HashMap<>();
+    public double ViewFinderWidth;
+    public double ViewFinderHeight;
     private Context _Context;
     private Camera _Camera;
     private int _Facing = CAMERA_FACING_BACK;
@@ -91,7 +102,6 @@ public class CameraSource {
     private SurfaceTexture _DummySurfaceTexture;
     private Thread _ProcessingThread;
     private FrameProcessingRunnable _FrameProcessor;
-    private final Map<byte[], ByteBuffer> _BytesToByteBuffer = new HashMap<>();
     private BarcodeScanningProcessor _ScanningProcessor;
 
     // ----------------------------------------------------------------------------
@@ -733,6 +743,7 @@ public class CameraSource {
         // These pending variables hold the state associated with the new frame awaiting
         // processing.
         private ByteBuffer _PendingFrameData;
+        private Bitmap _PendingFrameBitmap;
 
         FrameProcessingRunnable() {
         }
@@ -776,10 +787,34 @@ public class CameraSource {
                 }
 
                 _PendingFrameData = _BytesToByteBuffer.get(p_Data);
+                _PendingFrameBitmap = Bitmap.createBitmap(_PreviewSize.getWidth(), _PreviewSize.getHeight(), Bitmap.Config.ARGB_8888);
+                Allocation bmData = renderScriptNV21ToRGBA888(
+                        _Context,
+                        _PreviewSize.getWidth(),
+                        _PreviewSize.getHeight(),
+                        p_Data);
+                bmData.copyTo(_PendingFrameBitmap);
 
                 // Notify the processor thread if it is waiting on the next frame (see below).
                 _Lock.notifyAll();
             }
+        }
+
+        public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
+            RenderScript rs = RenderScript.create(context);
+            ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+
+            Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
+            Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+
+            Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
+            Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+
+            in.copyFrom(nv21);
+
+            yuvToRgbIntrinsic.setInput(in);
+            yuvToRgbIntrinsic.forEach(out);
+            return out;
         }
 
         /**
@@ -799,6 +834,8 @@ public class CameraSource {
         @Override
         public void run() {
             ByteBuffer data;
+            ByteBuffer buffer;
+            Bitmap resizedBitmap;
 
             while (true) {
                 synchronized (_Lock) {
@@ -821,11 +858,57 @@ public class CameraSource {
                         return;
                     }
 
+                    DisplayMetrics displayMetrics = _Context.getResources().getDisplayMetrics();
+                    ;
+                    int viewHeight = displayMetrics.heightPixels;
+                    int viewWidth = displayMetrics.widthPixels;
+
+                    float origFrameWidth = (float) _PreviewSize.getWidth();
+                    float origFrameHeight = (float) _PreviewSize.getHeight();
+                    if (origFrameHeight < origFrameWidth) {
+                        origFrameWidth = (float) _PreviewSize.getHeight();
+                        origFrameHeight = (float) _PreviewSize.getWidth();
+                    }
+
+                    float ratio = origFrameHeight / viewHeight;
+                    if (ratio > origFrameWidth / viewWidth) {
+                        ratio = origFrameWidth / viewWidth;
+                    }
+
+                    int newViewWidth = (int) (viewWidth * ratio);
+                    int newViewHeight = (int) (viewHeight * ratio);
+
+                    int viewFinderWidth = (int) (newViewWidth * ViewFinderWidth);
+                    int viewFinderHeight = (int) (newViewHeight * ViewFinderHeight);
+
+                    int x = (int) (origFrameWidth / 2 - viewFinderWidth / 2);
+                    int y = (int) (origFrameHeight / 2 - viewFinderHeight / 2);
+
+                    Matrix matrix = new Matrix();
+
+                    matrix.postRotate(90);
+
+                    _PendingFrameBitmap = Bitmap.createBitmap(_PendingFrameBitmap, 0, 0, _PendingFrameBitmap.getWidth(), _PendingFrameBitmap.getHeight(), matrix, true);
+                    Log.d(TAG, (origFrameWidth / viewHeight) + "viewWidth:" + viewWidth + " viewHeight:" + viewHeight + " r:" + ratio + " x:" + x + " y:" + y + " w:" + viewFinderWidth + " h:" + viewFinderHeight + " w1:" + origFrameWidth + " h1:" + origFrameHeight);
+
+                    if (viewFinderWidth == 0 || viewFinderHeight == 0) {
+                        resizedBitmap = _PendingFrameBitmap;
+                    } else {
+                        resizedBitmap = Bitmap.createBitmap(_PendingFrameBitmap, x, y, viewFinderWidth, viewFinderHeight);
+                    }
+
                     // Hold onto the frame data locally, so that we can use this for detection
                     // below. We need to clear _PendingFrameData to ensure that this buffer isn't
                     // recycled back to the camera before we are done using that data.
                     data = _PendingFrameData;
+
+                    int bytes = resizedBitmap.getByteCount();
+                    buffer =  ByteBuffer.allocate(bytes);
+                    resizedBitmap.copyPixelsToBuffer(data);
+
                     _PendingFrameData = null;
+                    _PendingFrameBitmap = null;
+
                 }
 
                 // The code below needs to run outside of synchronization, because this will
@@ -836,7 +919,7 @@ public class CameraSource {
 
                 try {
                     synchronized (_CameraLock) {
-                        InputImage image = InputImage.fromByteBuffer(data, _PreviewSize.getWidth(), _PreviewSize.getHeight(), _Rotation, InputImage.IMAGE_FORMAT_NV21);
+                        InputImage image = InputImage.fromByteBuffer(buffer, _PreviewSize.getWidth(), _PreviewSize.getHeight(), _Rotation, InputImage.IMAGE_FORMAT_NV21);
                         _ScanningProcessor.Process(data, image);
                     }
                 } catch (Throwable t) {
