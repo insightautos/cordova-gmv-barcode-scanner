@@ -15,14 +15,9 @@ declare namespace CordovaPluginMLKitBarcodeScanner {
     UPCE: boolean;
   }
 
-  interface DetectorSize {
-    width: number;
-    height: number;
-  }
-
   interface Options {
     types?: BarcodeTypes;
-    detectorSize?: DetectorSize;
+    detectorSize?: number;
   }
 
   interface Result {

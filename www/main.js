@@ -16,10 +16,7 @@ const defaultSettings = Object.freeze({
     PDF417: true,
     Aztec: true
   },
-  detectorSize: {
-    width: .5,
-    height: .7
-  }
+  detectorSize: 0.6
 });
 const detectorFormat = Object.freeze({
   Code128: 1,
@@ -76,14 +73,22 @@ function getBarcodeType(type) {
         detectorTypes += detectorFormat[key];
       }
     }
+
+    const multiplier = settings.detectorSize;
+    const isPortrait = window.innerWidth < window.innerHeight;
+    const detectorWidth = multiplier;
+    const detectorHeight = isPortrait
+      ? window.innerWidth * multiplier / window.innerHeight
+      : window.innerHeight * multiplier / window.innerWidth
+
     // Order of this settings object is critical. It will be passed in a basic array format and must be in the order shown.
     const args = {
       //Position 1
       detectorType: detectorTypes,
       //Position 2
-      detectorWidth: settings.detectorSize.width,
+      detectorWidth,
       //Position 3
-      detectorHeight: settings.detectorSize.height
+      detectorHeight
     };
     const sendSettings = [];
     for (const key in args) {
