@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-mlkit-barcode-scanner",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Google MLKit Vision Barcode Scanner Plugin",
   "cordova": {
     "id": "cordova-plugin-mlkit-barcode-scanner",
@@ -26,7 +26,7 @@
     "url": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner.git"
   },
   "homepage": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner#readme",
-  "types": "/types/main.d.ts",
+  "types": "./types/main.d.ts",
   "publishConfig": {
     "registry": "https://pkgs.dev.azure.com/mobisysgmbh/_packaging/mobisys/npm/registry/"
   },
