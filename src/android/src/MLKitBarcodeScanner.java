@@ -29,11 +29,12 @@ public class MLKitBarcodeScanner extends CordovaPlugin {
     }
 
     @Override
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException
+    {
         Context context = cordova.getActivity().getApplicationContext();
         _CallbackContext = callbackContext;
-        if (action.equals("startScan")) {
 
+        if (action.equals("startScan")) {
             class OneShotTask implements Runnable {
                 private final Context context;
                 private final JSONArray args;

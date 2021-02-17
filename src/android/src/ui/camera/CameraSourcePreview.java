@@ -90,9 +90,7 @@ public class CameraSourcePreview extends ViewGroup {
     }
 
     public int dpToPx(int dp) {
-        float density = _Context.getResources()
-                .getDisplayMetrics()
-                .density;
+        float density = _Context.getResources().getDisplayMetrics().density;
         return Math.round((float) dp * density);
     }
 
@@ -132,38 +130,55 @@ public class CameraSourcePreview extends ViewGroup {
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    private void startIfReady() throws IOException, SecurityException {
-        if (_StartRequested && _SurfaceAvailable) {
+    private void startIfReady() throws IOException, SecurityException 
+    {
+        if (_StartRequested && _SurfaceAvailable) 
+        {
             _CameraSource.start(_SurfaceView.getHolder());
-            if (_Overlay != null) {
+
+            if (_Overlay != null) 
+            {
                 Size size = _CameraSource.getPreviewSize();
+
                 SurfaceLayout();
+
                 int min = Math.min(size.getWidth(), size.getHeight());
                 int max = Math.max(size.getWidth(), size.getHeight());
-                if (isPortraitMode()) {
+
+                if (isPortraitMode()) 
+                {
                     // Swap width and height sizes when in portrait, since it will be rotated by
                     // 90 degrees
                     _Overlay.setCameraInfo(min, max, _CameraSource.getCameraFacing());
-                } else {
+                }
+                else
+                {
                     _Overlay.setCameraInfo(max, min, _CameraSource.getCameraFacing());
                 }
+
                 _Overlay.clear();
             }
+
             _StartRequested = false;
         }
     }
 
-    private void SurfaceLayout() {
-        if (_CameraSource != null) {
+    private void SurfaceLayout() 
+    {
+        if (_CameraSource != null) 
+        {
             Size size = _CameraSource.getPreviewSize();
-            if (size != null) {
+
+            if (size != null)
+            {
                 _previewWidth = size.getWidth();
                 _previewHeight = size.getHeight();
             }
         }
 
         // Swap width and height sizes when in portrait, since it will be rotated 90 degrees
-        if (isPortraitMode()) {
+        if (isPortraitMode()) 
+        {
             int tmp = _previewWidth;
             //noinspection SuspiciousNameCombination
             _previewWidth = _previewHeight;
@@ -180,7 +195,7 @@ public class CameraSourcePreview extends ViewGroup {
 
         // To fill the view with the camera preview, while also preserving the correct aspect ratio,
         // it is usually necessary to slightly oversize the child and to crop off portions along one
-        // of the dimensions.  We scale up based on the dimension requiring the most correction, and
+        // of the dimensions. We scale up based on the dimension requiring the most correction, and
         // compute a crop offset for the other dimension.
         if (widthRatio > heightRatio) {
             childWidth = _layoutWidth;
@@ -204,14 +219,20 @@ public class CameraSourcePreview extends ViewGroup {
         int actualWidth = (int) (_layoutWidth * ViewFinderWidth);
         int actualHeight = (int) (_layoutHeight * ViewFinderHeight);
 
-        _ViewFinderView.layout(_layoutWidth / 2 - actualWidth / 2, _layoutHeight / 2 - actualHeight / 2, _layoutWidth / 2 + actualWidth / 2, _layoutHeight / 2 + actualHeight / 2);
+        int lWidthHalf = _layoutWidth / 2;
+        int lHeightHalf = _layoutHeight / 2;
+        int aWidthHalf = actualWidth / 2;
+        int aHeightHalf = actualHeight / 2;
+
+        _ViewFinderView.layout(lWidthHalf - aWidthHalf, lHeightHalf - aHeightHalf, lWidthHalf + aWidthHalf, lHeightHalf + aHeightHalf);
 
         int buttonSize = dpToPx(45);
-        int torchLeft = _layoutWidth / 2 + actualWidth / 2 + (_layoutWidth - (_layoutWidth / 2 + actualWidth / 2)) / 2 - buttonSize / 2;
+        int torchLeft = lWidthHalf + aWidthHalf + (_layoutWidth - (lWidthHalf + aWidthHalf)) / 2 - buttonSize / 2;
         int torchTop = _layoutHeight - (_layoutWidth - torchLeft);
 
         //mTorchButton.layout(torchLeft, torchTop, torchLeft + buttonSize, torchTop + buttonSize);
-        _TorchButton.layout(torchLeft - buttonSize / 2, torchTop - buttonSize / 2, torchLeft + buttonSize / 2, torchTop + buttonSize / 2);
+        int bHalf = buttonSize / 2;
+        _TorchButton.layout(torchLeft - bHalf, torchTop - bHalf, torchLeft + bHalf, torchTop + bHalf);
     }
 
     @Override
@@ -232,9 +253,11 @@ public class CameraSourcePreview extends ViewGroup {
 
     private boolean isPortraitMode() {
         int orientation = _Context.getResources().getConfiguration().orientation;
+
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             return false;
         }
+
         if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             return true;
         }
@@ -243,27 +266,36 @@ public class CameraSourcePreview extends ViewGroup {
         return false;
     }
 
-    private class SurfaceCallback implements SurfaceHolder.Callback {
+    private class SurfaceCallback implements SurfaceHolder.Callback
+    {
         @Override
-        public void surfaceCreated(SurfaceHolder surface) {
+        public void surfaceCreated(SurfaceHolder surface) 
+        {
             _SurfaceAvailable = true;
 
-            try {
+            try 
+            {
                 startIfReady();
-            } catch (SecurityException se) {
+            } 
+            catch (SecurityException se) 
+            {
                 Log.e(TAG, "Do not have permission to start the camera", se);
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 Log.e(TAG, "Could not start camera source.", e);
             }
         }
 
         @Override
-        public void surfaceDestroyed(SurfaceHolder surface) {
+        public void surfaceDestroyed(SurfaceHolder surface)
+        {
             _SurfaceAvailable = false;
         }
 
         @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) 
+        {
         }
     }
 }

@@ -26,6 +26,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.os.Build;
+import android.os.Environment;
 import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RenderScript;
@@ -42,15 +43,17 @@ import com.google.android.gms.common.images.Size;
 import com.google.mlkit.vision.common.InputImage;
 import com.mobisys.cordova.plugins.mlkit.barcode.scanner.BarcodeScanningProcessor;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.Thread.State;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
@@ -110,26 +113,40 @@ public class CameraSource {
     private CameraSource() { // Constructor is private to force creation using the builder class.
     }
 
-    private static int getIdForRequestedCamera(int p_Facing) {
+    private static int getIdForRequestedCamera(int p_Facing)
+    {
         CameraInfo cameraInfo = new CameraInfo();
-        for (int i = 0; i < Camera.getNumberOfCameras(); ++i) {
+
+        int numCams = Camera.getNumberOfCameras();
+        Log.d(TAG, "Number of Cameras: " + numCams);
+
+        for (int i = 0; i < numCams; ++i)
+        {
             Camera.getCameraInfo(i, cameraInfo);
-            if (cameraInfo.facing == p_Facing) {
+
+            if (cameraInfo.facing == p_Facing)
+            {
                 return i;
             }
         }
+
         return -1;
     }
 
-    private static SizePair selectSizePair(Camera p_Camera, int p_DesiredWidth, int p_DesiredHeight) {
+    private static SizePair selectSizePair(Camera p_Camera, int p_DesiredWidth, int p_DesiredHeight)
+    {
         List<SizePair> validPreviewSizes = generateValidPreviewSizeList(p_Camera);
 
         SizePair selectedPair = null;
         int minDiff = Integer.MAX_VALUE;
-        for (SizePair sizePair : validPreviewSizes) {
+
+        for (SizePair sizePair : validPreviewSizes)
+        {
             Size size = sizePair.previewSize();
             int diff = Math.abs(size.getWidth() - p_DesiredWidth) + Math.abs(size.getHeight() - p_DesiredHeight);
-            if (diff < minDiff) {
+
+            if (diff < minDiff)
+            {
                 selectedPair = sizePair;
                 minDiff = diff;
             }
@@ -138,23 +155,31 @@ public class CameraSource {
         return selectedPair;
     }
 
-    private static List<SizePair> generateValidPreviewSizeList(Camera p_Camera) {
+    private static List<SizePair> generateValidPreviewSizeList(Camera p_Camera)
+    {
         Camera.Parameters parameters = p_Camera.getParameters();
         List<android.hardware.Camera.Size> supportedPreviewSizes = parameters.getSupportedPreviewSizes();
         List<android.hardware.Camera.Size> supportedPictureSizes = parameters.getSupportedPictureSizes();
         List<SizePair> validPreviewSizes = new ArrayList<>();
-        for (android.hardware.Camera.Size previewSize : supportedPreviewSizes) {
+
+        for (android.hardware.Camera.Size previewSize : supportedPreviewSizes)
+        {
             float previewAspectRatio = (float) previewSize.width / (float) previewSize.height;
-            for (android.hardware.Camera.Size pictureSize : supportedPictureSizes) {
+
+            for (android.hardware.Camera.Size pictureSize : supportedPictureSizes)
+            {
                 float pictureAspectRatio = (float) pictureSize.width / (float) pictureSize.height;
-                if (Math.abs(previewAspectRatio - pictureAspectRatio) < ASPECT_RATIO_TOLERANCE) {
+
+                if (Math.abs(previewAspectRatio - pictureAspectRatio) < ASPECT_RATIO_TOLERANCE)
+                {
                     validPreviewSizes.add(new SizePair(previewSize, pictureSize));
                     break;
                 }
             }
         }
 
-        if (validPreviewSizes.size() == 0) {
+        if (validPreviewSizes.size() == 0)
+        {
             Log.w(TAG, "No preview sizes have a corresponding same-aspect-ratio picture size");
             for (android.hardware.Camera.Size previewSize : supportedPreviewSizes) {
                 // The null picture size will let us know that we shouldn't set a picture size.
@@ -168,21 +193,27 @@ public class CameraSource {
     // ----------------------------------------------------------------------------
     // | Public Functions
     // ----------------------------------------------------------------------------
-    public void release() {
-        synchronized (_CameraLock) {
+    public void release() 
+    {
+        synchronized (_CameraLock) 
+        {
             stop();
             _FrameProcessor.release();
 
-            if (_ScanningProcessor != null) {
+            if (_ScanningProcessor != null)
+            {
                 _ScanningProcessor.Stop();
             }
         }
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    public CameraSource start() throws IOException {
-        synchronized (_CameraLock) {
-            if (_Camera != null) {
+    public CameraSource start() throws IOException
+    {
+        synchronized (_CameraLock)
+        {
+            if (_Camera != null)
+            {
                 return this;
             }
 
@@ -190,26 +221,34 @@ public class CameraSource {
 
             // SurfaceTexture was introduced in Honeycomb (11), so if we are running and
             // old version of Android. fall back to use SurfaceView.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+            {
                 _DummySurfaceTexture = new SurfaceTexture(DUMMY_TEXTURE_NAME);
                 _Camera.setPreviewTexture(_DummySurfaceTexture);
-            } else {
+            }
+            else
+            {
                 _DummySurfaceView = new SurfaceView(_Context);
                 _Camera.setPreviewDisplay(_DummySurfaceView.getHolder());
             }
+
             _Camera.startPreview();
 
             _ProcessingThread = new Thread(_FrameProcessor);
             _FrameProcessor.setActive(true);
             _ProcessingThread.start();
         }
+
         return this;
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    public CameraSource start(SurfaceHolder p_SurfaceHolder) throws IOException {
-        synchronized (_CameraLock) {
-            if (_Camera != null) {
+    public CameraSource start(SurfaceHolder p_SurfaceHolder) throws IOException 
+    {
+        synchronized (_CameraLock) 
+        {
+            if (_Camera != null)
+            {
                 return this;
             }
 
@@ -224,36 +263,53 @@ public class CameraSource {
         return this;
     }
 
-    public void stop() {
-        synchronized (_CameraLock) {
+    public void stop()
+    {
+        synchronized (_CameraLock)
+        {
             _FrameProcessor.setActive(false);
-            if (_ProcessingThread != null) {
-                try {
+
+            if (_ProcessingThread != null)
+            {
+                try
+                {
                     // Wait for the thread to complete to ensure that we can't have multiple threads
                     // executing at the same time (i.e., which would happen if we called start too
                     // quickly after stop).
                     _ProcessingThread.join();
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e)
+                {
                     Log.d(TAG, "Frame processing thread interrupted on release.");
                 }
+
                 _ProcessingThread = null;
             }
 
             // clear the buffer to prevent oom exceptions
             _BytesToByteBuffer.clear();
 
-            if (_Camera != null) {
+            if (_Camera != null)
+            {
                 _Camera.stopPreview();
                 _Camera.setPreviewCallbackWithBuffer(null);
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+
+                try
+                {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+                    {
                         _Camera.setPreviewTexture(null);
-                    } else {
+                    }
+                    else
+                    {
                         _Camera.setPreviewDisplay(null);
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Log.e(TAG, "Failed to clear camera preview: " + e);
                 }
+
                 _Camera.release();
                 _Camera = null;
             }
@@ -268,42 +324,54 @@ public class CameraSource {
         return _Facing;
     }
 
-    public int doZoom(float p_Scale) {
-        synchronized (_CameraLock) {
-            if (_Camera == null) {
+    public int doZoom(float p_Scale)
+    {
+        synchronized (_CameraLock)
+        {
+            if (_Camera == null)
+            {
                 return 0;
             }
+
             int currentZoom = 0;
             int maxZoom;
+
             Camera.Parameters parameters = _Camera.getParameters();
-            if (!parameters.isZoomSupported()) {
+
+            if (!parameters.isZoomSupported())
+            {
                 Log.w(TAG, "Zoom is not supported on this device");
                 return currentZoom;
             }
-            maxZoom = parameters.getMaxZoom();
 
+            maxZoom = parameters.getMaxZoom();
             currentZoom = parameters.getZoom() + 1;
+
             float newZoom;
-            if (p_Scale > 1) {
+
+            if (p_Scale > 1)
+            {
                 newZoom = currentZoom + p_Scale * (maxZoom / 10);
-            } else {
+            }
+            else
+            {
                 newZoom = currentZoom * p_Scale;
             }
-            currentZoom = Math.round(newZoom) - 1;
-            if (currentZoom < 0) {
-                currentZoom = 0;
-            } else if (currentZoom > maxZoom) {
-                currentZoom = maxZoom;
-            }
+
+            currentZoom = Math.min(Math.max(Math.round(newZoom) - 1, 0), maxZoom);
+
             parameters.setZoom(currentZoom);
             _Camera.setParameters(parameters);
             return currentZoom;
         }
     }
 
-    public void takePicture(ShutterCallback p_Shutter, PictureCallback p_Jpeg) {
-        synchronized (_CameraLock) {
-            if (_Camera != null) {
+    public void takePicture(ShutterCallback p_Shutter, PictureCallback p_Jpeg)
+    {
+        synchronized (_CameraLock)
+        {
+            if (_Camera != null)
+            {
                 PictureStartCallback startCallback = new PictureStartCallback();
                 startCallback._Delegate = p_Shutter;
                 PictureDoneCallback doneCallback = new PictureDoneCallback();
@@ -319,11 +387,16 @@ public class CameraSource {
         return _FocusMode;
     }
 
-    public boolean setFocusMode(@FocusMode String p_Mode) {
-        synchronized (_CameraLock) {
-            if (_Camera != null && p_Mode != null) {
+    public boolean setFocusMode(@FocusMode String p_Mode)
+    {
+        synchronized (_CameraLock)
+        {
+            if (_Camera != null && p_Mode != null)
+            {
                 Camera.Parameters parameters = _Camera.getParameters();
-                if (parameters.getSupportedFocusModes().contains(p_Mode)) {
+
+                if (parameters.getSupportedFocusModes().contains(p_Mode))
+                {
                     parameters.setFocusMode(p_Mode);
                     _Camera.setParameters(parameters);
                     _FocusMode = p_Mode;
@@ -341,8 +414,10 @@ public class CameraSource {
         return _FlashMode;
     }
 
-    public boolean setFlashMode(@FlashMode String p_Mode) {
-        synchronized (_CameraLock) {
+    public boolean setFlashMode(@FlashMode String p_Mode)
+    {
+        synchronized (_CameraLock)
+        {
             if (_Camera != null && p_Mode != null) {
                 Camera.Parameters parameters = _Camera.getParameters();
                 if (parameters.getSupportedFlashModes().contains(p_Mode)) {
@@ -370,27 +445,37 @@ public class CameraSource {
         }
     }
 
-    public void cancelAutoFocus() {
-        synchronized (_CameraLock) {
-            if (_Camera != null) {
+    public void cancelAutoFocus()
+    {
+        synchronized (_CameraLock)
+        {
+            if (_Camera != null)
+            {
                 _Camera.cancelAutoFocus();
             }
         }
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public boolean setAutoFocusMoveCallback(@Nullable AutoFocusMoveCallback p_Callback) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+    public boolean setAutoFocusMoveCallback(@Nullable AutoFocusMoveCallback p_Callback)
+    {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
+        {
             return false;
         }
 
-        synchronized (_CameraLock) {
-            if (_Camera != null) {
+        synchronized (_CameraLock)
+        {
+            if (_Camera != null)
+            {
                 CameraAutoFocusMoveCallback autoFocusMoveCallback = null;
-                if (p_Callback != null) {
+
+                if (p_Callback != null)
+                {
                     autoFocusMoveCallback = new CameraAutoFocusMoveCallback();
                     autoFocusMoveCallback._Delegate = p_Callback;
                 }
+
                 _Camera.setAutoFocusMoveCallback(autoFocusMoveCallback);
             }
         }
@@ -399,21 +484,35 @@ public class CameraSource {
     }
 
     @SuppressLint("InlinedApi")
-    private Camera createCamera() {
+    private Camera createCamera()
+    {
         int requestedCameraId = getIdForRequestedCamera(_Facing);
-        if (requestedCameraId == -1) {
-            throw new RuntimeException("Could not find requested camera.");
-        }
-        Camera camera = Camera.open(requestedCameraId);
 
+        if (requestedCameraId == -1)
+        {
+            requestedCameraId = getIdForRequestedCamera(CAMERA_FACING_FRONT);
+
+            if (requestedCameraId == -1) 
+            {
+                throw new RuntimeException("Could not find requested camera.");
+            }
+            else 
+            {
+                _Facing = CAMERA_FACING_FRONT;
+            }
+        }
+
+        Camera camera = Camera.open(requestedCameraId);
         SizePair sizePair = selectSizePair(camera, _RequestedPreviewWidth, _RequestedPreviewHeight);
+
         if (sizePair == null) {
             throw new RuntimeException("Could not find suitable preview size.");
         }
+
         Size pictureSize = sizePair.pictureSize();
         _PreviewSize = sizePair.previewSize();
-
         int[] previewFpsRange = selectPreviewFpsRange(camera, _RequestedFps);
+
         if (previewFpsRange == null) {
             throw new RuntimeException("Could not find suitable preview frames per second range.");
         }
@@ -425,8 +524,10 @@ public class CameraSource {
         }
 
         parameters.setPreviewSize(_PreviewSize.getWidth(), _PreviewSize.getHeight());
-        parameters.setPreviewFpsRange(previewFpsRange[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
-                previewFpsRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]);
+        parameters.setPreviewFpsRange(
+                previewFpsRange[Camera.Parameters.PREVIEW_FPS_MIN_INDEX],
+                previewFpsRange[Camera.Parameters.PREVIEW_FPS_MAX_INDEX]
+        );
         parameters.setPreviewFormat(ImageFormat.NV21);
 
         setRotation(camera, parameters, requestedCameraId);
@@ -495,6 +596,7 @@ public class CameraSource {
         WindowManager windowManager = (WindowManager) _Context.getSystemService(Context.WINDOW_SERVICE);
         int degrees = 0;
         int rotation = windowManager.getDefaultDisplay().getRotation();
+
         switch (rotation) {
             case Surface.ROTATION_0:
                 degrees = 0;
@@ -517,6 +619,7 @@ public class CameraSource {
 
         int angle;
         int displayAngle;
+
         if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             angle = (cameraInfo.orientation + degrees) % 360;
             displayAngle = (360 - angle) % 360; // compensate for it being mirrored
@@ -527,6 +630,8 @@ public class CameraSource {
 
         // This corresponds to the rotation constants in {@link Frame}.
         _Rotation = angle;
+
+        Log.i(TAG, "DisplayAngle: " + displayAngle + ", Angle: " + angle);
 
         p_Camera.setDisplayOrientation(displayAngle);
         p_Parameters.setRotation(angle);
@@ -539,6 +644,7 @@ public class CameraSource {
 
         byte[] byteArray = new byte[bufferSize];
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+
         if (!buffer.hasArray() || (buffer.array() != byteArray)) {
             throw new IllegalStateException("Failed to create valid buffer for camera source.");
         }
@@ -745,8 +851,7 @@ public class CameraSource {
         private ByteBuffer _PendingFrameData;
         private Bitmap _PendingFrameBitmap;
 
-        FrameProcessingRunnable() {
-        }
+        FrameProcessingRunnable() {}
 
         /**
          * Releases the underlying receiver. This is only safe to do after the
@@ -762,8 +867,10 @@ public class CameraSource {
          * Marks the runnable as active/not active. Signals any blocked threads to
          * continue.
          */
-        void setActive(boolean p_Active) {
-            synchronized (_Lock) {
+        void setActive(boolean p_Active) 
+        {
+            synchronized (_Lock) 
+            {
                 _Active = p_Active;
                 _Lock.notifyAll();
             }
@@ -774,25 +881,25 @@ public class CameraSource {
          * frame buffer (if present) back to the camera, and keeps a pending reference
          * to the frame data for future use.
          */
-        void setNextFrame(byte[] p_Data, Camera p_Camera) {
-            synchronized (_Lock) {
-                if (_PendingFrameData != null) {
+        void setNextFrame(byte[] p_Data, Camera p_Camera) 
+        {
+            synchronized (_Lock) 
+            {
+                if (_PendingFrameData != null) 
+                {
                     p_Camera.addCallbackBuffer(_PendingFrameData.array());
                     _PendingFrameData = null;
                 }
 
-                if (!_BytesToByteBuffer.containsKey(p_Data)) {
+                if (!_BytesToByteBuffer.containsKey(p_Data)) 
+                {
                     Log.d(TAG, "Skipping frame. Could not find ByteBuffer associated with the image data from the camera.");
                     return;
                 }
 
                 _PendingFrameData = _BytesToByteBuffer.get(p_Data);
                 _PendingFrameBitmap = Bitmap.createBitmap(_PreviewSize.getWidth(), _PreviewSize.getHeight(), Bitmap.Config.ARGB_8888);
-                Allocation bmData = renderScriptNV21ToRGBA888(
-                        _Context,
-                        _PreviewSize.getWidth(),
-                        _PreviewSize.getHeight(),
-                        p_Data);
+                Allocation bmData = renderScriptNV21ToRGBA888(_Context, _PreviewSize.getWidth(), _PreviewSize.getHeight(), p_Data);
                 bmData.copyTo(_PendingFrameBitmap);
 
                 // Notify the processor thread if it is waiting on the next frame (see below).
@@ -800,7 +907,8 @@ public class CameraSource {
             }
         }
 
-        public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21) {
+        public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21)
+        {
             RenderScript rs = RenderScript.create(context);
             ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
 
@@ -832,19 +940,26 @@ public class CameraSource {
          * decrease the FPS setting above to allow for some idle time in between frames.
          */
         @Override
-        public void run() {
-            ByteBuffer data;
-            ByteBuffer buffer;
-            Bitmap resizedBitmap;
+        public void run()
+        {
+            ByteBuffer data = null;
+            ByteBuffer buffer = null;
+            Bitmap resizedBitmap = null;
 
-            while (true) {
-                synchronized (_Lock) {
-                    while (_Active && (_PendingFrameData == null)) {
-                        try {
+            while (true)
+            {
+                synchronized (_Lock)
+                {
+                    while (_Active && (_PendingFrameData == null))
+                    {
+                        try 
+                        {
                             // Wait for the next frame to be received from the camera, since we
                             // don't have it yet.
                             _Lock.wait();
-                        } catch (InterruptedException e) {
+                        } 
+                        catch (InterruptedException e) 
+                        {
                             Log.d(TAG, "Frame processing loop terminated.", e);
                             return;
                         }
@@ -859,41 +974,48 @@ public class CameraSource {
                     }
 
                     DisplayMetrics displayMetrics = _Context.getResources().getDisplayMetrics();
-                    ;
                     int viewHeight = displayMetrics.heightPixels;
                     int viewWidth = displayMetrics.widthPixels;
 
                     float origFrameWidth = (float) _PreviewSize.getWidth();
                     float origFrameHeight = (float) _PreviewSize.getHeight();
-                    if (origFrameHeight < origFrameWidth) {
+
+                    if (origFrameHeight < origFrameWidth)
+                    {
                         origFrameWidth = (float) _PreviewSize.getHeight();
                         origFrameHeight = (float) _PreviewSize.getWidth();
                     }
 
                     float ratio = origFrameHeight / viewHeight;
-                    if (ratio > origFrameWidth / viewWidth) {
+
+                    if (ratio > origFrameWidth / viewWidth)
+                    {
                         ratio = origFrameWidth / viewWidth;
                     }
 
                     int newViewWidth = (int) (viewWidth * ratio);
                     int newViewHeight = (int) (viewHeight * ratio);
 
-                    int viewFinderWidth = (int) (newViewWidth * ViewFinderWidth);
-                    int viewFinderHeight = (int) (newViewHeight * ViewFinderHeight);
+                    // int viewFinderWidth = (int) (newViewWidth * ViewFinderWidth);
+                    // int viewFinderHeight = (int) (newViewHeight * ViewFinderHeight);
 
-                    int x = (int) (origFrameWidth / 2 - viewFinderWidth / 2);
-                    int y = (int) (origFrameHeight / 2 - viewFinderHeight / 2);
+                    int viewFinderWidth = (int) (_PreviewSize.getWidth() * ViewFinderWidth);
+                    int viewFinderHeight = (int) (_PreviewSize.getHeight() * ViewFinderHeight);
 
-                    Matrix matrix = new Matrix();
+                    int x = (int) (origFrameWidth / 2 - (origFrameWidth * ViewFinderWidth / 2));
+                    int y = (int) (origFrameHeight / 2 - (origFrameHeight * ViewFinderHeight / 2));
 
-                    matrix.postRotate(90);
-
-                    _PendingFrameBitmap = Bitmap.createBitmap(_PendingFrameBitmap, 0, 0, _PendingFrameBitmap.getWidth(), _PendingFrameBitmap.getHeight(), matrix, true);
                     Log.d(TAG, (origFrameWidth / viewHeight) + "viewWidth:" + viewWidth + " viewHeight:" + viewHeight + " r:" + ratio + " x:" + x + " y:" + y + " w:" + viewFinderWidth + " h:" + viewFinderHeight + " w1:" + origFrameWidth + " h1:" + origFrameHeight);
 
-                    if (viewFinderWidth == 0 || viewFinderHeight == 0) {
+                    if (viewFinderWidth == 0 || viewFinderHeight == 0) 
+                    {
+                        Log.w(TAG, "ViewFinder Width or Height is 0!");
                         resizedBitmap = _PendingFrameBitmap;
-                    } else {
+                    } 
+                    else 
+                    {
+                        // Matrix matrix = new Matrix();
+                        // matrix.postRotate(90);
                         resizedBitmap = Bitmap.createBitmap(_PendingFrameBitmap, x, y, viewFinderWidth, viewFinderHeight);
                     }
 
@@ -902,13 +1024,13 @@ public class CameraSource {
                     // recycled back to the camera before we are done using that data.
                     data = _PendingFrameData;
 
-                    int bytes = resizedBitmap.getByteCount();
-                    buffer =  ByteBuffer.allocate(bytes);
-                    resizedBitmap.copyPixelsToBuffer(data);
+                    byte[] nvdata = getNV21(resizedBitmap);
+                    buffer = ByteBuffer.wrap(nvdata);
 
                     _PendingFrameData = null;
                     _PendingFrameBitmap = null;
 
+                    createImageFile(resizedBitmap);
                 }
 
                 // The code below needs to run outside of synchronization, because this will
@@ -916,16 +1038,102 @@ public class CameraSource {
                 // the camera to add pending frame(s) while we are running detection on the
                 // current
                 // frame.
-
-                try {
-                    synchronized (_CameraLock) {
-                        InputImage image = InputImage.fromByteBuffer(buffer, _PreviewSize.getWidth(), _PreviewSize.getHeight(), _Rotation, InputImage.IMAGE_FORMAT_NV21);
-                        _ScanningProcessor.Process(data, image);
+                try
+                {
+                    synchronized (_CameraLock)
+                    {
+                        InputImage image = InputImage.fromByteBuffer(buffer, resizedBitmap.getWidth(), resizedBitmap.getHeight(), _Rotation, InputImage.IMAGE_FORMAT_NV21);
+                        _ScanningProcessor.Process(buffer, image);
                     }
-                } catch (Throwable t) {
+                }
+                catch (Throwable t)
+                {
                     Log.e(TAG, "Exception thrown from receiver.", t);
-                } finally {
+                }
+                finally
+                {
                     _Camera.addCallbackBuffer(data.array());
+                    resizedBitmap.recycle();
+                    buffer = null;
+                }
+            }
+        }
+
+        public void createImageFile(final Bitmap bitmap) 
+        {
+            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+
+            String timeStamp = new SimpleDateFormat("MMdd_HHmmssSSS").format(new Date());
+            String imageFileName = "region_" + timeStamp + ".jpg";
+            final File file = new File(path, imageFileName);
+
+            try {
+                // Make sure the Pictures directory exists.
+                if (path.mkdirs()) {
+                    // Toast.makeText(context, "Not exist :" + path.getName(), Toast.LENGTH_SHORT).show();
+                }
+
+                OutputStream os = new FileOutputStream(file);
+
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+
+                os.flush();
+                os.close();
+                Log.i("ExternalStorage", "Writed " + path + file.getName());
+                // Toast.makeText(context, file.getName(), Toast.LENGTH_SHORT).show();
+
+            } catch (Exception e) {
+                // Unable to create file, likely because external storage is
+                // not currently mounted.
+                Log.w("ExternalStorage", "Error writing " + file, e);
+            }
+        }
+
+        private byte[] getNV21(Bitmap bitmap) 
+        {
+            int inputWidth = bitmap.getWidth();
+            int inputHeight = bitmap.getHeight();
+
+            int[] argb = new int[inputWidth * inputHeight];
+            bitmap.getPixels(argb, 0, inputWidth, 0, 0, inputWidth, inputHeight);
+    
+            byte[] yuv = new byte[inputHeight * inputWidth + 2 * (int) Math.ceil(inputHeight/2.0) * (int) Math.ceil(inputWidth/2.0)];
+            encodeYUV420SP(yuv, argb, inputWidth, inputHeight);
+    
+            return yuv;
+        }
+    
+        private void encodeYUV420SP(byte[] yuv420sp, int[] argb, int width, int height)
+        {
+            final int frameSize = width * height;
+            int yIndex = 0;
+            int uvIndex = frameSize;
+            int R, G, B, Y, U, V;
+            int index = 0;
+
+            for (int j = 0; j < height; j++) 
+            {
+                for (int i = 0; i < width; i++) 
+                {
+                    R = (argb[index] & 0xff0000) >> 16;
+                    G = (argb[index] & 0xff00) >> 8;
+                    B = (argb[index] & 0xff) >> 0;
+                    // well known RGB to YUV algorithm
+                    Y = ((66 * R + 129 * G + 25 * B + 128) >> 8) + 16;
+                    U = ((-38 * R - 74 * G + 112 * B + 128) >> 8) + 128;
+                    V = ((112 * R - 94 * G - 18 * B + 128) >> 8) + 128;
+    
+                    // NV21 has a plane of Y and interleaved planes of VU each sampled by a factor of 2
+                    //    meaning for every 4 Y pixels there are 1 V and 1 U.  Note the sampling is every other
+                    //    pixel AND every other scanline.
+                    yuv420sp[yIndex++] = (byte) Math.min(Math.max(Y, 0), 255);
+
+                    if (j % 2 == 0 && index % 2 == 0) 
+                    {
+                        yuv420sp[uvIndex++] = (byte) Math.min(Math.max(U, 0), 255);
+                        yuv420sp[uvIndex++] = (byte) Math.min(Math.max(V, 0), 255);
+                    }
+                    index++;
                 }
             }
         }

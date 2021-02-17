@@ -31,11 +31,16 @@ public class BarcodeScanningProcessor {
     @GuardedBy("this")
     private InputImage _ProcessingMetaData;
 
-    public BarcodeScanningProcessor(BarcodeScanner p_BarcodeDetector, Context p_Context) {
+    public BarcodeScanningProcessor(BarcodeScanner p_BarcodeDetector, Context p_Context)
+    {
         _Detector = p_BarcodeDetector;
-        if (p_Context instanceof BarcodeUpdateListener) {
+
+        if (p_Context instanceof BarcodeUpdateListener)
+        {
             _BarcodeUpdateListener = (BarcodeUpdateListener) p_Context;
-        } else {
+        }
+        else
+        {
             throw new RuntimeException("Hosting activity must implement BarcodeUpdateListener");
         }
     }
@@ -43,6 +48,7 @@ public class BarcodeScanningProcessor {
     public synchronized void Process(ByteBuffer p_Data, InputImage p_FrameMetadata) {
         _LatestImage = p_Data;
         _LatestImageMetaData = p_FrameMetadata;
+
         if (_ProcessingImage == null && _ProcessingMetaData == null) {
             ProcessLatestImage();
         }
@@ -55,9 +61,12 @@ public class BarcodeScanningProcessor {
     private synchronized void ProcessLatestImage() {
         _ProcessingImage = _LatestImage;
         _ProcessingMetaData = _LatestImageMetaData;
+
         _LatestImage = null;
         _LatestImageMetaData = null;
-        if (_ProcessingImage != null && _ProcessingMetaData != null) {
+
+        if (_ProcessingImage != null && _ProcessingMetaData != null)
+        {
             ProcessImage(_ProcessingImage, _ProcessingMetaData);
         }
     }

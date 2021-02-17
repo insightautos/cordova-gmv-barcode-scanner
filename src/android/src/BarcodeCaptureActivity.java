@@ -1,18 +1,3 @@
-/*
- * Copyright (C) The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.mobisys.cordova.plugins.mlkit.barcode.scanner;
 
 import android.Manifest;
@@ -52,17 +37,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-public final class BarcodeCaptureActivity extends AppCompatActivity
-        implements BarcodeScanningProcessor.BarcodeUpdateListener {
+public final class BarcodeCaptureActivity extends AppCompatActivity implements BarcodeScanningProcessor.BarcodeUpdateListener
+{
     public static final String BarcodeFormat = "MLKitBarcodeFormat";
     public static final String BarcodeType = "MLKitBarcodeType";
     public static final String BarcodeValue = "MLKitBarcodeValue";
+
     // ----------------------------------------------------------------------------
     // |  Private Properties
     // ----------------------------------------------------------------------------
     private static final String TAG = "Barcode-reader";
     private static final int RC_HANDLE_GMS = 9001;
     private static final int RC_HANDLE_CAMERA_PERM = 2;
+
     // ----------------------------------------------------------------------------
     // |  Public Properties
     // ----------------------------------------------------------------------------
@@ -78,8 +65,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
     // ----------------------------------------------------------------------------
     // |  Public Functions
     // ----------------------------------------------------------------------------
-    @Override
-    public void onCreate(Bundle icicle) {
+    @Override public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
 
         // Hide the status bar and action bar.
@@ -90,6 +76,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
         // Remember that you should never show the action bar if the
         // status bar is hidden, so hide that too if necessary.
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         if (getActionBar() != null) {
             getActionBar().hide();
         }
@@ -113,6 +100,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
         _GraphicOverlay = (GraphicOverlay<BarcodeGraphic>) findViewById(getResources().getIdentifier("graphicOverlay", "id", getPackageName()));
 
         int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+
         if (rc == PackageManager.PERMISSION_GRANTED) {
             createCameraSource(true, false);
         } else {
@@ -133,14 +121,16 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
         if (requestCode != RC_HANDLE_CAMERA_PERM) {
             Log.d(TAG, "Got unexpected permission result: " + requestCode);
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
             return;
         }
 
-        if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        {
             Log.d(TAG, "Camera permission granted - initialize the camera source");
             // we have permission, so create the camerasource
             DetectionTypes = getIntent().getIntExtra("DetectionTypes", 0);
@@ -153,8 +143,10 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
 
         Log.e(TAG, "Permission not granted: results len = " + grantResults.length + " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
 
-        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialog, int id)
+            {
                 finish();
             }
         };
@@ -166,9 +158,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
     }
 
     @Override
-    public void onBarcodeDetected(Barcode barcode) {
+    public void onBarcodeDetected(Barcode barcode)
+    {
         // do something with barcode data returned
-
         Intent data = new Intent();
         data.putExtra(BarcodeFormat, barcode.getFormat());
         data.putExtra(BarcodeType, barcode.getValueType());
@@ -207,18 +199,20 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
     // |  Private Functions
     // ----------------------------------------------------------------------------
     @SuppressLint("InlinedApi")
-    private void createCameraSource(boolean autoFocus, boolean useFlash) {
+    private void createCameraSource(boolean autoFocus, boolean useFlash)
+    {
         int detectionType = 0;
 
-        if (DetectionTypes == 0 || DetectionTypes == 1234) {
+        if (DetectionTypes == 0 || DetectionTypes == 1234)
+        {
             detectionType = (Barcode.FORMAT_CODE_39 | Barcode.FORMAT_DATA_MATRIX);
-        } else {
+        }
+        else
+        {
             detectionType = DetectionTypes;
         }
 
-        BarcodeScannerOptions options =
-                new BarcodeScannerOptions.Builder()
-                        .setBarcodeFormats(detectionType).build();
+        BarcodeScannerOptions options = new BarcodeScannerOptions.Builder().setBarcodeFormats(detectionType).build();
 
         BarcodeScanner barcodeDetector = BarcodeScanning.getClient(options);
         BarcodeScanningProcessor scanningProcessor = new BarcodeScanningProcessor(barcodeDetector, this);
@@ -235,17 +229,24 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
         _CameraSource = builder.setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null).build();
     }
 
-    private void startCameraSource() throws SecurityException {
+    private void startCameraSource() throws SecurityException
+    {
         int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getApplicationContext());
-        if (code != ConnectionResult.SUCCESS) {
+
+        if (code != ConnectionResult.SUCCESS)
+        {
             Dialog dlg = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
             dlg.show();
         }
 
-        if (_CameraSource != null) {
-            try {
+        if (_CameraSource != null)
+        {
+            try
+            {
                 _Preview.start(_CameraSource, _GraphicOverlay);
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 Log.e(TAG, "Unable to start camera source.", e);
                 _CameraSource.release();
                 _CameraSource = null;
@@ -253,21 +254,29 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
         }
     }
 
-    private void requestCameraPermission() {
+    private void requestCameraPermission()
+    {
         Log.w(TAG, "Camera permission is not granted. Requesting permission");
 
-        final String[] permissions = new String[]{Manifest.permission.CAMERA};
+        final String[] permissions = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-        if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+        boolean shouldShowPermission = !ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA);
+        shouldShowPermission = shouldShowPermission && !ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (shouldShowPermission)
+        {
             ActivityCompat.requestPermissions(this, permissions, RC_HANDLE_CAMERA_PERM);
             return;
         }
 
+
         final Activity thisActivity = this;
 
-        View.OnClickListener listener = new View.OnClickListener() {
+        View.OnClickListener listener = new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 ActivityCompat.requestPermissions(thisActivity, permissions, RC_HANDLE_CAMERA_PERM);
             }
         };
@@ -282,26 +291,32 @@ public final class BarcodeCaptureActivity extends AppCompatActivity
     // ----------------------------------------------------------------------------
     // |  Helper classes
     // ----------------------------------------------------------------------------
-    private class CaptureGestureListener extends GestureDetector.SimpleOnGestureListener {
+    private class CaptureGestureListener extends GestureDetector.SimpleOnGestureListener
+    {
         @Override
-        public boolean onSingleTapConfirmed(MotionEvent e) {
+        public boolean onSingleTapConfirmed(MotionEvent e)
+        {
             return super.onSingleTapConfirmed(e);
         }
     }
 
-    private class ScaleListener implements ScaleGestureDetector.OnScaleGestureListener {
+    private class ScaleListener implements ScaleGestureDetector.OnScaleGestureListener
+    {
         @Override
-        public boolean onScale(ScaleGestureDetector detector) {
+        public boolean onScale(ScaleGestureDetector detector)
+        {
             return false;
         }
 
         @Override
-        public boolean onScaleBegin(ScaleGestureDetector detector) {
+        public boolean onScaleBegin(ScaleGestureDetector detector)
+        {
             return true;
         }
 
         @Override
-        public void onScaleEnd(ScaleGestureDetector detector) {
+        public void onScaleEnd(ScaleGestureDetector detector)
+        {
             _CameraSource.doZoom(detector.getScaleFactor());
         }
     }
