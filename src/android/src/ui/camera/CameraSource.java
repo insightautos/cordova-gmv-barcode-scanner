@@ -20,18 +20,15 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.os.Build;
-import android.os.Environment;
-import android.renderscript.Allocation;
-import android.renderscript.Element;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicYuvToRGB;
-import android.renderscript.Type;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
@@ -48,12 +45,10 @@ import java.lang.Thread.State;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Date;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresPermission;
@@ -193,9 +188,9 @@ public class CameraSource {
     // ----------------------------------------------------------------------------
     // | Public Functions
     // ----------------------------------------------------------------------------
-    public void release() 
+    public void release()
     {
-        synchronized (_CameraLock) 
+        synchronized (_CameraLock)
         {
             stop();
             _FrameProcessor.release();
@@ -243,9 +238,9 @@ public class CameraSource {
     }
 
     @RequiresPermission(Manifest.permission.CAMERA)
-    public CameraSource start(SurfaceHolder p_SurfaceHolder) throws IOException 
+    public CameraSource start(SurfaceHolder p_SurfaceHolder) throws IOException
     {
-        synchronized (_CameraLock) 
+        synchronized (_CameraLock)
         {
             if (_Camera != null)
             {
@@ -492,11 +487,11 @@ public class CameraSource {
         {
             requestedCameraId = getIdForRequestedCamera(CAMERA_FACING_FRONT);
 
-            if (requestedCameraId == -1) 
+            if (requestedCameraId == -1)
             {
                 throw new RuntimeException("Could not find requested camera.");
             }
-            else 
+            else
             {
                 _Facing = CAMERA_FACING_FRONT;
             }
@@ -867,9 +862,9 @@ public class CameraSource {
          * Marks the runnable as active/not active. Signals any blocked threads to
          * continue.
          */
-        void setActive(boolean p_Active) 
+        void setActive(boolean p_Active)
         {
-            synchronized (_Lock) 
+            synchronized (_Lock)
             {
                 _Active = p_Active;
                 _Lock.notifyAll();
@@ -881,54 +876,75 @@ public class CameraSource {
          * frame buffer (if present) back to the camera, and keeps a pending reference
          * to the frame data for future use.
          */
-        void setNextFrame(byte[] p_Data, Camera p_Camera) 
+        void setNextFrame(byte[] p_Data, Camera p_Camera)
         {
-            synchronized (_Lock) 
+            synchronized (_Lock)
             {
-                if (_PendingFrameData != null) 
+                if (_PendingFrameData != null)
                 {
                     p_Camera.addCallbackBuffer(_PendingFrameData.array());
                     _PendingFrameData = null;
                 }
 
-                if (!_BytesToByteBuffer.containsKey(p_Data)) 
+                if (!_BytesToByteBuffer.containsKey(p_Data))
                 {
                     Log.d(TAG, "Skipping frame. Could not find ByteBuffer associated with the image data from the camera.");
                     return;
                 }
 
                 _PendingFrameData = _BytesToByteBuffer.get(p_Data);
-                _PendingFrameBitmap = Bitmap.createBitmap(_PreviewSize.getWidth(), _PreviewSize.getHeight(), Bitmap.Config.ARGB_8888);
-                Allocation bmData = renderScriptNV21ToRGBA888(_Context, _PreviewSize.getWidth(), _PreviewSize.getHeight(), p_Data);
-                bmData.copyTo(_PendingFrameBitmap);
+                _PendingFrameBitmap = getBitmap(_PendingFrameData);
 
                 // Notify the processor thread if it is waiting on the next frame (see below).
                 _Lock.notifyAll();
             }
         }
 
-        public Allocation renderScriptNV21ToRGBA888(Context context, int width, int height, byte[] nv21)
-        {
-            RenderScript rs = RenderScript.create(context);
-            ScriptIntrinsicYuvToRGB yuvToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
 
-            Type.Builder yuvType = new Type.Builder(rs, Element.U8(rs)).setX(nv21.length);
-            Allocation in = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT);
+        private Bitmap rotateBitmap(
+                Bitmap bitmap, int rotationDegrees, boolean flipX, boolean flipY) {
+            Matrix matrix = new Matrix();
 
-            Type.Builder rgbaType = new Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height);
-            Allocation out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT);
+            // Rotate the image back to straight.
+            matrix.postRotate(rotationDegrees);
 
-            in.copyFrom(nv21);
+            // Mirror the image along the X or Y axis.
+            matrix.postScale(flipX ? -1.0f : 1.0f, flipY ? -1.0f : 1.0f);
+            Bitmap rotatedBitmap =
+                    Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
-            yuvToRgbIntrinsic.setInput(in);
-            yuvToRgbIntrinsic.forEach(out);
-            return out;
+            // Recycle the old bitmap if it has changed.
+            if (rotatedBitmap != bitmap) {
+                bitmap.recycle();
+            }
+            return rotatedBitmap;
+        }
+
+        private Bitmap getBitmap(ByteBuffer data) {
+            data.rewind();
+            byte[] imageInBuffer = new byte[data.limit()];
+            data.get(imageInBuffer, 0, imageInBuffer.length);
+            try {
+                YuvImage image =
+                        new YuvImage(
+                                imageInBuffer, ImageFormat.NV21, _PreviewSize.getWidth(), _PreviewSize.getHeight(), null);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                image.compressToJpeg(new Rect(0, 0, _PreviewSize.getWidth(), _PreviewSize.getHeight()), 80, stream);
+
+                Bitmap bmp = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size());
+
+                stream.close();
+                return bmp;
+            } catch (Exception e) {
+                Log.e("VisionProcessorBase", "Error: " + e.getMessage());
+            }
+            return null;
         }
 
         /**
          * As long as the processing thread is active, this executes detection on frames
          * continuously. The next pending frame is either immediately available or
-         * hasn't been received yet. Once it is available, we transfer the frame info to
+         * hasn't been received yet. Once it is available, we transfer   the frame info to
          * local variables and run detection on that frame. It immediately loops back
          * for the next frame without pausing.
          * <p/>
@@ -942,8 +958,7 @@ public class CameraSource {
         @Override
         public void run()
         {
-            ByteBuffer data = null;
-            ByteBuffer buffer = null;
+            ByteBuffer data;
             Bitmap resizedBitmap = null;
 
             while (true)
@@ -952,13 +967,13 @@ public class CameraSource {
                 {
                     while (_Active && (_PendingFrameData == null))
                     {
-                        try 
+                        try
                         {
                             // Wait for the next frame to be received from the camera, since we
                             // don't have it yet.
                             _Lock.wait();
-                        } 
-                        catch (InterruptedException e) 
+                        }
+                        catch (InterruptedException e)
                         {
                             Log.d(TAG, "Frame processing loop terminated.", e);
                             return;
@@ -973,50 +988,33 @@ public class CameraSource {
                         return;
                     }
 
+                    // Define the crop coordinates.
                     DisplayMetrics displayMetrics = _Context.getResources().getDisplayMetrics();
-                    int viewHeight = displayMetrics.heightPixels;
-                    int viewWidth = displayMetrics.widthPixels;
+                    float screenWidth = displayMetrics.widthPixels;
+                    float screenHeight = displayMetrics.heightPixels;
 
-                    float origFrameWidth = (float) _PreviewSize.getWidth();
-                    float origFrameHeight = (float) _PreviewSize.getHeight();
+                    float imageWidth = _PreviewSize.getWidth() > _PreviewSize.getHeight() ? _PreviewSize.getHeight() : _PreviewSize.getWidth();
+                    float imageHeight = _PreviewSize.getWidth() > _PreviewSize.getHeight() ? _PreviewSize.getWidth() : _PreviewSize.getHeight();
 
-                    if (origFrameHeight < origFrameWidth)
-                    {
-                        origFrameWidth = (float) _PreviewSize.getHeight();
-                        origFrameHeight = (float) _PreviewSize.getWidth();
-                    }
+                    float ratioX = imageWidth / screenWidth;
+                    float ratioY = imageHeight / screenHeight;
+                    float ratio = ratioY > ratioX ? ratioX : ratioY;
 
-                    float ratio = origFrameHeight / viewHeight;
+                    int frameWidth = (int) (screenWidth * ViewFinderWidth * ratio);
+                    int frameHeight = (int) (screenHeight * ViewFinderHeight * ratio);
 
-                    if (ratio > origFrameWidth / viewWidth)
-                    {
-                        ratio = origFrameWidth / viewWidth;
-                    }
+                    int x = (int) (imageWidth / 2 - frameWidth / 2);
+                    int y = (int) (imageHeight / 2 - frameHeight / 2);
 
-                    int newViewWidth = (int) (viewWidth * ratio);
-                    int newViewHeight = (int) (viewHeight * ratio);
+                    // Rotate image
+                    // @todo: Rotating the image with matrix causes performance issues and results in a crash
+                    // _PendingFrameBitmap = rotateBitmap(_PendingFrameBitmap, 90, false, false);
 
-                    // int viewFinderWidth = (int) (newViewWidth * ViewFinderWidth);
-                    // int viewFinderHeight = (int) (newViewHeight * ViewFinderHeight);
-
-                    int viewFinderWidth = (int) (_PreviewSize.getWidth() * ViewFinderWidth);
-                    int viewFinderHeight = (int) (_PreviewSize.getHeight() * ViewFinderHeight);
-
-                    int x = (int) (origFrameWidth / 2 - (origFrameWidth * ViewFinderWidth / 2));
-                    int y = (int) (origFrameHeight / 2 - (origFrameHeight * ViewFinderHeight / 2));
-
-                    Log.d(TAG, (origFrameWidth / viewHeight) + "viewWidth:" + viewWidth + " viewHeight:" + viewHeight + " r:" + ratio + " x:" + x + " y:" + y + " w:" + viewFinderWidth + " h:" + viewFinderHeight + " w1:" + origFrameWidth + " h1:" + origFrameHeight);
-
-                    if (viewFinderWidth == 0 || viewFinderHeight == 0) 
-                    {
-                        Log.w(TAG, "ViewFinder Width or Height is 0!");
+                    if (frameWidth == 0 || frameHeight == 0) {
                         resizedBitmap = _PendingFrameBitmap;
-                    } 
-                    else 
-                    {
-                        // Matrix matrix = new Matrix();
-                        // matrix.postRotate(90);
-                        resizedBitmap = Bitmap.createBitmap(_PendingFrameBitmap, x, y, viewFinderWidth, viewFinderHeight);
+                    } else {
+                        // Crop image
+                        resizedBitmap = Bitmap.createBitmap(_PendingFrameBitmap, x, y, frameWidth, frameHeight);
                     }
 
                     // Hold onto the frame data locally, so that we can use this for detection
@@ -1024,13 +1022,8 @@ public class CameraSource {
                     // recycled back to the camera before we are done using that data.
                     data = _PendingFrameData;
 
-                    byte[] nvdata = getNV21(resizedBitmap);
-                    buffer = ByteBuffer.wrap(nvdata);
-
                     _PendingFrameData = null;
                     _PendingFrameBitmap = null;
-
-                    createImageFile(resizedBitmap);
                 }
 
                 // The code below needs to run outside of synchronization, because this will
@@ -1042,8 +1035,16 @@ public class CameraSource {
                 {
                     synchronized (_CameraLock)
                     {
-                        InputImage image = InputImage.fromByteBuffer(buffer, resizedBitmap.getWidth(), resizedBitmap.getHeight(), _Rotation, InputImage.IMAGE_FORMAT_NV21);
-                        _ScanningProcessor.Process(buffer, image);
+                        // Original image from camera, works flawlessly but without viewfinder
+                        InputImage image = InputImage.fromByteBuffer(data, _PreviewSize.getWidth(), _PreviewSize.getHeight(), _Rotation, InputImage.IMAGE_FORMAT_NV21);
+
+                        // fromBitmap kinda works, but is inefficient
+                        // ML Kit also states that you should use ByteBuffer or byte[]
+                        // another issue is that matrix postRotate causes a crash
+                        // but then the cropping will not be accurate
+                        // InputImage image = InputImage.fromBitmap(resizedBitmap, _Rotation);
+
+                        _ScanningProcessor.Process(image);
                     }
                 }
                 catch (Throwable t)
@@ -1053,87 +1054,6 @@ public class CameraSource {
                 finally
                 {
                     _Camera.addCallbackBuffer(data.array());
-                    resizedBitmap.recycle();
-                    buffer = null;
-                }
-            }
-        }
-
-        public void createImageFile(final Bitmap bitmap) 
-        {
-            File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-
-            String timeStamp = new SimpleDateFormat("MMdd_HHmmssSSS").format(new Date());
-            String imageFileName = "region_" + timeStamp + ".jpg";
-            final File file = new File(path, imageFileName);
-
-            try {
-                // Make sure the Pictures directory exists.
-                if (path.mkdirs()) {
-                    // Toast.makeText(context, "Not exist :" + path.getName(), Toast.LENGTH_SHORT).show();
-                }
-
-                OutputStream os = new FileOutputStream(file);
-
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
-
-                os.flush();
-                os.close();
-                Log.i("ExternalStorage", "Writed " + path + file.getName());
-                // Toast.makeText(context, file.getName(), Toast.LENGTH_SHORT).show();
-
-            } catch (Exception e) {
-                // Unable to create file, likely because external storage is
-                // not currently mounted.
-                Log.w("ExternalStorage", "Error writing " + file, e);
-            }
-        }
-
-        private byte[] getNV21(Bitmap bitmap) 
-        {
-            int inputWidth = bitmap.getWidth();
-            int inputHeight = bitmap.getHeight();
-
-            int[] argb = new int[inputWidth * inputHeight];
-            bitmap.getPixels(argb, 0, inputWidth, 0, 0, inputWidth, inputHeight);
-    
-            byte[] yuv = new byte[inputHeight * inputWidth + 2 * (int) Math.ceil(inputHeight/2.0) * (int) Math.ceil(inputWidth/2.0)];
-            encodeYUV420SP(yuv, argb, inputWidth, inputHeight);
-    
-            return yuv;
-        }
-    
-        private void encodeYUV420SP(byte[] yuv420sp, int[] argb, int width, int height)
-        {
-            final int frameSize = width * height;
-            int yIndex = 0;
-            int uvIndex = frameSize;
-            int R, G, B, Y, U, V;
-            int index = 0;
-
-            for (int j = 0; j < height; j++) 
-            {
-                for (int i = 0; i < width; i++) 
-                {
-                    R = (argb[index] & 0xff0000) >> 16;
-                    G = (argb[index] & 0xff00) >> 8;
-                    B = (argb[index] & 0xff) >> 0;
-                    // well known RGB to YUV algorithm
-                    Y = ((66 * R + 129 * G + 25 * B + 128) >> 8) + 16;
-                    U = ((-38 * R - 74 * G + 112 * B + 128) >> 8) + 128;
-                    V = ((112 * R - 94 * G - 18 * B + 128) >> 8) + 128;
-    
-                    // NV21 has a plane of Y and interleaved planes of VU each sampled by a factor of 2
-                    //    meaning for every 4 Y pixels there are 1 V and 1 U.  Note the sampling is every other
-                    //    pixel AND every other scanline.
-                    yuv420sp[yIndex++] = (byte) Math.min(Math.max(Y, 0), 255);
-
-                    if (j % 2 == 0 && index % 2 == 0) 
-                    {
-                        yuv420sp[uvIndex++] = (byte) Math.min(Math.max(U, 0), 255);
-                        yuv420sp[uvIndex++] = (byte) Math.min(Math.max(V, 0), 255);
-                    }
-                    index++;
                 }
             }
         }

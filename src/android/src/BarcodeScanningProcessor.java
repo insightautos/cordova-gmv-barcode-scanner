@@ -22,14 +22,10 @@ public class BarcodeScanningProcessor {
     private final BarcodeUpdateListener _BarcodeUpdateListener;
     // To keep the latest images and its metadata.
     @GuardedBy("this")
-    private ByteBuffer _LatestImage;
-    @GuardedBy("this")
-    private InputImage _LatestImageMetaData;
+    private InputImage _LatestImage;
     // To keep the images and metadata in process.
     @GuardedBy("this")
-    private ByteBuffer _ProcessingImage;
-    @GuardedBy("this")
-    private InputImage _ProcessingMetaData;
+    private InputImage _ProcessingImage;
 
     public BarcodeScanningProcessor(BarcodeScanner p_BarcodeDetector, Context p_Context)
     {
@@ -45,11 +41,10 @@ public class BarcodeScanningProcessor {
         }
     }
 
-    public synchronized void Process(ByteBuffer p_Data, InputImage p_FrameMetadata) {
-        _LatestImage = p_Data;
-        _LatestImageMetaData = p_FrameMetadata;
+    public synchronized void Process(InputImage p_Image) {
+        _LatestImage = p_Image;
 
-        if (_ProcessingImage == null && _ProcessingMetaData == null) {
+        if (_ProcessingImage == null) {
             ProcessLatestImage();
         }
     }
@@ -60,37 +55,26 @@ public class BarcodeScanningProcessor {
 
     private synchronized void ProcessLatestImage() {
         _ProcessingImage = _LatestImage;
-        _ProcessingMetaData = _LatestImageMetaData;
 
         _LatestImage = null;
-        _LatestImageMetaData = null;
 
-        if (_ProcessingImage != null && _ProcessingMetaData != null)
+        if (_ProcessingImage != null)
         {
-            ProcessImage(_ProcessingImage, _ProcessingMetaData);
+            ProcessImage(_ProcessingImage);
         }
     }
 
-    private void ProcessImage(ByteBuffer p_Data, final InputImage p_FrameMetadata) {
-        InputImage image = InputImage.fromByteBuffer(p_Data, p_FrameMetadata.getWidth(), p_FrameMetadata.getHeight(), p_FrameMetadata.getRotationDegrees(), p_FrameMetadata.getFormat());
-        DetectInVisionImage(image);
+    private void ProcessImage(final InputImage p_Image) {
+        DetectInVisionImage(p_Image);
     }
 
     private void DetectInVisionImage(InputImage p_Image) {
         _Detector.process(p_Image)
-                .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
-                    @Override
-                    public void onSuccess(List<Barcode> results) {
-                        OnSuccess(results);
-                        ProcessLatestImage();
-                    }
+                .addOnSuccessListener(results -> {
+                    OnSuccess(results);
+                    ProcessLatestImage();
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(Exception e) {
-                        OnFailure(e);
-                    }
-                });
+                .addOnFailureListener(e -> OnFailure(e));
     }
 
     private void OnSuccess(List<Barcode> p_Barcodes) {
