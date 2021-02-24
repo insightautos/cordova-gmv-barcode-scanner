@@ -1,3 +1,15 @@
-/.idea
+# OS specific files
 .DS_Store
-node_modules
+Thumbs.db
+
+# Modules
+node_modules/
+
+# Android directories
+.gradle/
+.idea/
+gradle/
+
+# Android files
+local.properties
+gradlew*

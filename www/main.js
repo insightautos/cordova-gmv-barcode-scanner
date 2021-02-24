@@ -110,11 +110,11 @@ function getBarcodeType(type) {
     }, (err) => {
       switch (err[0]) {
         case null:
-        case "USER_CANCELLED":
-          failure({ cancelled: true, message: "The scan was cancelled." });
+        case 'USER_CANCELLED':
+          failure({ cancelled: true, message: 'The scan was cancelled.' });
           break;
-        case "SCANNER_OPEN":
-          failure({ cancelled: false, message: "Scanner already open." });
+        case 'SCANNER_OPEN':
+          failure({ cancelled: false, message: 'Scanner already open.' });
           break;
         default:
           failure({ cancelled: false, message: err });

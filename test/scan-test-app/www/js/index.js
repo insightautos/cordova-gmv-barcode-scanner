@@ -21,10 +21,13 @@
 // See https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready
 document.addEventListener('deviceready', onDeviceReady, false);
 
-function onDeviceReady() {
-    // Cordova is now initialized. Have fun!
+function scan() {
+    cordova.plugins.mlkit.barcodeScanner.scan({}, res => alert(JSON.stringify(res, null, 2)), console.error);
+}
 
+function onDeviceReady() {
     console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
     document.getElementById('deviceready').classList.add('ready');
-    cordova.plugins.mlkit.barcodeScanner.scan({}, console.log, console.error);
+    document.getElementById('scan').onclick = scan;
+    scan();
 }

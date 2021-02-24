@@ -35,6 +35,8 @@
         <source-file src="src/ios/CameraViewController.m"/>
     </platform>
     <platform name="android">
+        <dependency id="cordova-plugin-androidx-adapter" version="^1.1.3" />
+
         <config-file parent="/*" target="res/xml/config.xml">
             <feature name="cordova-plugin-mlkit-barcode-scanner">
                 <param name="android-package" value="com.mobisys.cordova.plugins.mlkit.barcode.scanner.MLKitBarcodeScanner"/>
