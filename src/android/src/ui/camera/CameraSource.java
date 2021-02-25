@@ -844,7 +844,7 @@ public class CameraSource {
         // These pending variables hold the state associated with the new frame awaiting
         // processing.
         private ByteBuffer _PendingFrameData;
-        private Bitmap _PendingFrameBitmap;
+        // private Bitmap _PendingFrameBitmap;
 
         FrameProcessingRunnable() {}
 
@@ -893,7 +893,7 @@ public class CameraSource {
                 }
 
                 _PendingFrameData = _BytesToByteBuffer.get(p_Data);
-                _PendingFrameBitmap = getBitmap(_PendingFrameData);
+                // _PendingFrameBitmap = getBitmap(_PendingFrameData);
 
                 // Notify the processor thread if it is waiting on the next frame (see below).
                 _Lock.notifyAll();
@@ -959,7 +959,7 @@ public class CameraSource {
         public void run()
         {
             ByteBuffer data;
-            Bitmap resizedBitmap = null;
+            // Bitmap resizedBitmap = null;
 
             while (true)
             {
@@ -988,6 +988,7 @@ public class CameraSource {
                         return;
                     }
 
+                    /*
                     // Define the crop coordinates.
                     DisplayMetrics displayMetrics = _Context.getResources().getDisplayMetrics();
                     float screenWidth = displayMetrics.widthPixels;
@@ -1008,7 +1009,7 @@ public class CameraSource {
 
                     // Rotate image
                     // @todo: Rotating the image with matrix causes performance issues and results in a crash
-                    // _PendingFrameBitmap = rotateBitmap(_PendingFrameBitmap, 90, false, false);
+                    _PendingFrameBitmap = rotateBitmap(_PendingFrameBitmap, 90, false, false);
 
                     if (frameWidth == 0 || frameHeight == 0) {
                         resizedBitmap = _PendingFrameBitmap;
@@ -1016,6 +1017,7 @@ public class CameraSource {
                         // Crop image
                         resizedBitmap = Bitmap.createBitmap(_PendingFrameBitmap, x, y, frameWidth, frameHeight);
                     }
+                    */
 
                     // Hold onto the frame data locally, so that we can use this for detection
                     // below. We need to clear _PendingFrameData to ensure that this buffer isn't
@@ -1023,7 +1025,7 @@ public class CameraSource {
                     data = _PendingFrameData;
 
                     _PendingFrameData = null;
-                    _PendingFrameBitmap = null;
+                    // _PendingFrameBitmap = null;
                 }
 
                 // The code below needs to run outside of synchronization, because this will
@@ -1042,7 +1044,7 @@ public class CameraSource {
                         // ML Kit also states that you should use ByteBuffer or byte[]
                         // another issue is that matrix postRotate causes a crash
                         // but then the cropping will not be accurate
-                        // InputImage image = InputImage.fromBitmap(resizedBitmap, _Rotation);
+                        //InputImage image = InputImage.fromBitmap(resizedBitmap, _Rotation);
 
                         _ScanningProcessor.Process(image);
                     }

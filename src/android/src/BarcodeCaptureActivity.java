@@ -175,23 +175,23 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     @Override
     protected void onResume() {
         super.onResume();
+        createCameraSource(true, false);
         startCameraSource();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (_Preview != null) {
-            _Preview.stop();
-        }
+        _Preview.stop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        if (_Preview != null) {
-            _Preview.release();
+        _Preview.release();
+        if (_CameraSource != null) {
+            _CameraSource.release();
         }
     }
 
@@ -201,7 +201,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     @SuppressLint("InlinedApi")
     private void createCameraSource(boolean autoFocus, boolean useFlash)
     {
-        int detectionType = 0;
+        int detectionType;
 
         if (DetectionTypes == 0 || DetectionTypes == 1234)
         {
