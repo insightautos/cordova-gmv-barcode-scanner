@@ -117,3 +117,4 @@ The `detectorSize` option does not currently exclude the area around the detecto
 
 - [ ] Android: Migrate from deprecatd Camera API to CameraX
 - [ ] Android: Get Viewfinder (detectorSize) to work
+- [ ] Android: Test functionality with Android 5.1 (API 22)
