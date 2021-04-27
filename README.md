@@ -109,6 +109,25 @@ result: {
 
 ## Run the test app
 
+Install cordova
+```
+npm i -g cordova
+```
+
+Install node modules
+```
+npm i
+```
+
+Build and run the project Android
+```
+cordova build android && cordova run android
+```
+and iOS
+```
+cordova build ios && cordova run ios
+```
+
 ## Known Issues
 
 The `detectorSize` option does not currently exclude the area around the detector from being scanned, which means that anything shown on the preview screen is up for grabs to the barcode detector.
