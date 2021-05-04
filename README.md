@@ -114,9 +114,19 @@ Install cordova
 npm i -g cordova
 ```
 
+Go to test app
+```
+cd test/scan-test-app
+```
+
 Install node modules
 ```
 npm i
+```
+
+Prepare Cordova
+```
+cordova platform add android && cordova plugin add ../../ --link --force
 ```
 
 Build and run the project Android
@@ -128,12 +138,8 @@ and iOS
 cordova build ios && cordova run ios
 ```
 
-## Known Issues
+## To-dos <small>(2021-May)</small>
 
-The `detectorSize` option does not currently exclude the area around the detector from being scanned, which means that anything shown on the preview screen is up for grabs to the barcode detector.
-
-## To-dos <small>(Feb-2021)</small>
-
-- [ ] Android: Migrate from deprecatd Camera API to CameraX
-- [ ] Android: Get Viewfinder (detectorSize) to work
+- [X] Android: Migrate from deprecatd Camera API to CameraX
+- [X] Android: Get Viewfinder (detectorSize) to work
 - [ ] Android: Test functionality with Android 5.1 (API 22)

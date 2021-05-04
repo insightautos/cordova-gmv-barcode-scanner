@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-mlkit-barcode-scanner",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Google MLKit Vision Barcode Scanner Plugin",
   "cordova": {
     "id": "cordova-plugin-mlkit-barcode-scanner",
