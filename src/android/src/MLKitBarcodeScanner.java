@@ -56,13 +56,16 @@ public class MLKitBarcodeScanner extends CordovaPlugin {
     }
 
     private void openNewActivity(Context context, JSONArray args) {
-        Intent intent = new Intent(context, BarcodeCaptureActivity.class);
+        Intent intent = new Intent(context, CaptureActivity.class);
         intent.putExtra("DetectionTypes", args.optInt(0, 1234));
-        intent.putExtra("ViewFinderWidth", args.optDouble(1, .5));
-        intent.putExtra("ViewFinderHeight", args.optDouble(2, .7));
+        intent.putExtra("DetectorSize", args.optDouble(1, 0.5));
+
+        //intent.putExtra("ViewFinderWidth", args.optDouble(1, .5));
+       // intent.putExtra("ViewFinderHeight", args.optDouble(2, .7));
 
         this.cordova.setActivityResultCallback(this);
         this.cordova.startActivityForResult(this, intent, RC_BARCODE_CAPTURE);
+
     }
 
 
@@ -73,9 +76,9 @@ public class MLKitBarcodeScanner extends CordovaPlugin {
         if (requestCode == RC_BARCODE_CAPTURE) {
             if (resultCode == CommonStatusCodes.SUCCESS) {
                 if (data != null) {
-                    Integer barcodeFormat = data.getIntExtra(BarcodeCaptureActivity.BarcodeFormat, 0);
-                    Integer barcodeType = data.getIntExtra(BarcodeCaptureActivity.BarcodeType, 0);
-                    String barcodeValue = data.getStringExtra(BarcodeCaptureActivity.BarcodeValue);
+                    Integer barcodeFormat = data.getIntExtra(CaptureActivity.BarcodeFormat, 0);
+                    Integer barcodeType = data.getIntExtra(CaptureActivity.BarcodeType, 0);
+                    String barcodeValue = data.getStringExtra(CaptureActivity.BarcodeValue);
                     JSONArray result = new JSONArray();
                     result.put(barcodeValue);
                     result.put(barcodeFormat);

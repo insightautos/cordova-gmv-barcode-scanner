@@ -75,20 +75,18 @@ function getBarcodeType(type) {
     }
 
     const multiplier = settings.detectorSize;
-    const isPortrait = window.innerWidth < window.innerHeight;
+/*  const isPortrait = window.innerWidth < window.innerHeight;
     const detectorWidth = multiplier;
     const detectorHeight = isPortrait
       ? window.innerWidth * multiplier / window.innerHeight
-      : window.innerHeight * multiplier / window.innerWidth
+      : window.innerHeight * multiplier / window.innerWidth */
 
     // Order of this settings object is critical. It will be passed in a basic array format and must be in the order shown.
     const args = {
       //Position 1
       detectorType: detectorTypes,
       //Position 2
-      detectorWidth,
-      //Position 3
-      detectorHeight
+      detectorSize: multiplier
     };
     const sendSettings = [];
     for (const key in args) {

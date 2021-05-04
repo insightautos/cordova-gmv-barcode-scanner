@@ -50,7 +50,7 @@
             <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
             <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="barcode" />
             <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode" />
-            <activity android:label="Read Barcode" android:name="com.mobisys.cordova.plugins.mlkit.barcode.scanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
+            <activity android:label="Read Barcode" android:name="com.mobisys.cordova.plugins.mlkit.barcode.scanner.CaptureActivity" android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         </config-file>
 
         <config-file parent="/*" target="AndroidManifest.xml">
@@ -59,7 +59,7 @@
         <config-file parent="application" target="AndroidManifest.xml">
             <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
             <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES" android:value="barcode" />
-            <activity android:label="Read Barcode" android:name="com.mobisys.cordova.plugins.mlkit.barcode.scanner.BarcodeCaptureActivity" android:theme="@style/Theme.AppCompat.Light"/>
+            <activity android:label="Read Barcode" android:name="com.mobisys.cordova.plugins.mlkit.barcode.scanner.CaptureActivity" android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         </config-file>
 
         <config-file target="res/values/strings.xml" parent="/*">
@@ -77,19 +77,26 @@
             <string name="barcode_error">"Error reading barcode: %1$s"</string>
         </config-file>
 
-        <source-file src="src/android/src/BarcodeCaptureActivity.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
-        <source-file src="src/android/src/BarcodeGraphic.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
-        <source-file src="src/android/src/BarcodeScanningProcessor.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
-        <source-file src="src/android/src/MLKitBarcodeScanner.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
+        <!-- <source-file src="src/android/src/BarcodeCaptureActivity.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/> -->      
+        <!-- <source-file src="src/android/src/BarcodeGraphic.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/> -->
+        <!-- <source-file src="src/android/src/BarcodeScanningProcessor.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/> -->
 
+        <source-file src="src/android/src/CaptureActivity.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
+        <source-file src="src/android/src/MLKitBarcodeScanner.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner"/>
+        
+        <!--
         <source-file src="src/android/src/ui/camera/CameraSource.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/ui/camera"/>
         <source-file src="src/android/src/ui/camera/CameraSourcePreview.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/ui/camera"/>
         <source-file src="src/android/src/ui/camera/GraphicOverlay.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/ui/camera"/>
+        -->
 
-        <resource-file src="src/android/res/layout/barcode_capture.xml" target="res/layout/barcode_capture.xml"/>
+        <source-file src="src/android/src/utils/BitmapUtils.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/utils"/>
+        <source-file src="src/android/src/utils/FrameMetadata.java" target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/utils"/>
+
+        <resource-file src="src/android/res/layout/capture_activity.xml" target="res/layout/capture_activity.xml"/>
 
         <resource-file src="src/android/res/drawable/flashlight.png" target="res/drawable/flashlight.png"/>
-        <resource-file src="src/android/res/drawable/rounded_rectangle.xml" target="res/drawable/rounded_rectangle.xml"/>
+        <!-- <resource-file src="src/android/res/drawable/rounded_rectangle.xml" target="res/drawable/rounded_rectangle.xml"/> -->
         <resource-file src="src/android/res/drawable/torch_active.xml" target="res/drawable/torch_active.xml"/>
         <resource-file src="src/android/res/drawable/torch_inactive.xml" target="res/drawable/torch_inactive.xml"/>
 
@@ -98,6 +105,12 @@
 
         <framework src="com.google.android.gms:play-services-vision:17.0.2" />
         <framework src="com.google.mlkit:barcode-scanning:16.0.3"/>
+
+        <framework src="androidx.camera:camera-core:1.0.0-beta05"/>
+        <framework src="androidx.camera:camera-camera2:1.0.0-beta05"/>
+        <framework src="androidx.camera:camera-lifecycle:1.0.0-beta05"/>
+        <framework src="androidx.camera:camera-view:1.0.0-alpha12"/>
+        <framework src="androidx.constraintlayout:constraintlayout:2.0.4"/>
 
         <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference"/>
     </platform>
