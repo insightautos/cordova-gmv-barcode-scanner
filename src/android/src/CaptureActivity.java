@@ -14,6 +14,7 @@ import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+
 import android.util.Size;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -94,9 +95,11 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
         //Create the bounding box
         surfaceView = findViewById(getResources().getIdentifier("overlay", "id", getPackageName()));
         surfaceView.setZOrderOnTop(true);
+
         holder = surfaceView.getHolder();
         holder.setFormat(PixelFormat.TRANSPARENT);
         holder.addCallback(this);
+
 
         // read parameters from the intent used to launch the activity.
         DetectionTypes = getIntent().getIntExtra("DetectionTypes", 1234);
@@ -135,7 +138,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
         });
 
     }
-    
+
     // ----------------------------------------------------------------------------
     // |  Helper classes
     // ----------------------------------------------------------------------------
@@ -259,7 +262,9 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
 
     void startCamera() {
         mCameraView = findViewById(getResources().getIdentifier("previewView", "id", getPackageName()));
-        mCameraView.setScaleType(PreviewView.ScaleType.FIT_CENTER);
+
+        //mCameraView.setScaleType(PreviewView.ScaleType.FIT_CENTER);
+
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         cameraProviderFuture.addListener(new Runnable() {
@@ -297,10 +302,11 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
 
         preview.setSurfaceProvider(mCameraView.createSurfaceProvider());
 
+
         ImageAnalysis imageAnalysis =
                 new ImageAnalysis.Builder()
-                        .setTargetResolution(new Size(1280, 720))
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                         .build();
 
         BarcodeScanner scanner = BarcodeScanning.getClient(new BarcodeScannerOptions.Builder().setBarcodeFormats(detectionType).build());
@@ -316,8 +322,6 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
 
                 Bitmap bmp = BitmapUtils.getBitmap(image);
 
-                DisplayMetrics displaymetrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
                 int height = bmp.getHeight();
                 int width = bmp.getWidth();
 
@@ -345,11 +349,11 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
                 scanner.process(InputImage.fromBitmap(bitmap, image.getImageInfo().getRotationDegrees())).addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
                     @Override
                     public void onSuccess(List<Barcode> barCodes) {
-                        /*
-                            # Code to test image viewfinder
-                            ImageView imageView = (ImageView) findViewById(getResources().getIdentifier("imageView", "id", getPackageName()));
-                            imageView.setImageBitmap(bitmap);
-                        */
+
+                        //  # Code to test image viewfinder
+                        /*ImageView imageView = (ImageView) findViewById(getResources().getIdentifier("imageView", "id", getPackageName()));
+                        imageView.setImageBitmap(bitmap);*/
+
 
                         if (barCodes.size() > 0) {
                             for (Barcode barcode : barCodes) {
@@ -387,13 +391,12 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
      * For drawing the rectangular box
      */
     private void DrawFocusRect(int color) {
-        DisplayMetrics displaymetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+
         if (mCameraView != null) {
             int height = mCameraView.getHeight();
             int width = mCameraView.getWidth();
 
-            int left, right, top, bottom, diameter, boxHeight, boxWidth;
+            int left, right, top, bottom, diameter;
 
             diameter = width;
             if (height < width) {
@@ -417,7 +420,12 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
             bottom = height / 2 + diameter / 2;
 
             //Changing the value of x in diameter/x will change the size of the box ; inversely proportionate to x
-            canvas.drawRoundRect(new RectF(left, top, right, bottom), 100, 100, paint);
+            if (DetectorSize <= 0.3) {
+                canvas.drawRect(new RectF(left, top, right, bottom), paint);
+            } else {
+                canvas.drawRoundRect(new RectF(left, top, right, bottom), 100, 100, paint);
+            }
+
             holder.unlockCanvasAndPost(canvas);
         }
 
