@@ -262,6 +262,9 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
 
     void startCamera() {
         mCameraView = findViewById(getResources().getIdentifier("previewView", "id", getPackageName()));
+        mCameraView.setPreferredImplementationMode(PreviewView.ImplementationMode.TEXTURE_VIEW);
+        mCameraView.setScaleX(1F);
+        mCameraView.setScaleY(1F);
 
         //mCameraView.setScaleType(PreviewView.ScaleType.FIT_CENTER);
 
@@ -273,6 +276,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
                 try {
                     ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                     CaptureActivity.this.bindPreview(cameraProvider);
+
                 } catch (ExecutionException | InterruptedException e) {
                     // No errors need to be handled for this Future.
                     // This should never be reached.
@@ -300,8 +304,8 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                 .build();
 
-        preview.setSurfaceProvider(mCameraView.createSurfaceProvider());
 
+        preview.setSurfaceProvider(mCameraView.createSurfaceProvider());
 
         ImageAnalysis imageAnalysis =
                 new ImageAnalysis.Builder()
@@ -310,6 +314,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
                         .build();
 
         BarcodeScanner scanner = BarcodeScanning.getClient(new BarcodeScannerOptions.Builder().setBarcodeFormats(detectionType).build());
+
 
         imageAnalysis.setAnalyzer(executor, new ImageAnalysis.Analyzer() {
             @SuppressLint("UnsafeExperimentalUsageError")
@@ -383,6 +388,7 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
 
 
         });
+
         camera = cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, imageAnalysis, preview);
     }
 
