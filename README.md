@@ -149,4 +149,4 @@ cordova build ios && cordova run ios
 
 - [X] Android: Migrate from deprecatd Camera API to CameraX
 - [X] Android: Get Viewfinder (detectorSize) to work
-- [ ] Android: Test functionality with Android 5.1 (API 22)
+- [X] Android: Test functionality with Android 5.1 (API 22)
