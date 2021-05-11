@@ -33,22 +33,29 @@ cordova plugin add cordova-plugin-mlkit-barcode-scanner
 
 ## Barcode Support
 
-1d formats:
-- :+1: Codabar
-- :+1: Code 39
-- :+1: Code 93
-- :+1: Code 128
-- :+1: EAN-8
-- :+1: EAN-13
-- :+1: ITF
-- :+1: UPC-A
-- :+1: UPC-E
+| 1d formats                                      | Android | iOS     |
+| ----------------------------------------------- | ------- | ------- |
+| Codabar                                         | ✓       | ✓       |
+| Code 39                                         | ✓       | ✓       |
+| Code 93                                         | ✓       | ✓       |
+| Code 128                                        | ✓       | ✓       |
+| EAN-8.                                          | ✓       | ✓       |
+| EAN-13                                          | ✓       | ✓       |
+| ITF                                             | ✓       | ✓       |
+| MSI                                             | ✗       | ✗       |
+| RSS Expanded                                    | ✗       | ✗       |
+| RSS-14                                          | ✗       | ✗       |
+| UPC-A                                           | ✓       | ✓       |
+| UPC-E                                           | ✓       | ✓       |
 
-2D formats:
-- :+1: Aztec
-- :+1: Data Matrix
-- :+1: PDF417
-- :+1: QR Code
+| 2d formats                                      | Android | iOS     |
+| ----------------------------------------------- | ------- | ------- |
+| Aztec                                           | ✓       | ✓       |
+| Codablock                                       | ✗       | ✗       |
+| Data Matrix                                     | ✓       | ✓       |
+| MaxiCode                                        | ✗       | ✗       |
+| PDF417                                          | ✓       | ✓       |
+| QR Code                                         | ✓       | ✓       |
 
 :information_source: Note that this API does not recognize barcodes in these forms:
 - 1D Barcodes with only one character
