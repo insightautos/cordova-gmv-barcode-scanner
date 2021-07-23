@@ -145,8 +145,8 @@ and iOS
 cordova build ios && cordova run ios
 ```
 
-## To-dos <small>(2021-May)</small>
+## Known Issues
 
-- [X] Android: Migrate from deprecatd Camera API to CameraX
-- [X] Android: Get Viewfinder (detectorSize) to work
-- [X] Android: Test functionality with Android 5.1 (API 22)
+Under unknown circumstances, an error may occur where the camera is upside down.
+Here is a list of devices that have this problem:
+- Zebra MC330K (Manufacturer: Zebra Technologies, Model: MC33)
