@@ -18,11 +18,10 @@ stages:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     steps:
     - task: npmAuthenticate@0
-      displayName: Setup authentication for Azure DevOps npm Feed
+      displayName: Setup authentication for AzureDevOps npm feed
       inputs:
         workingFile: .npmrc
     - script: |
-        npm config get registry
         npm publish
-      displayName: 'npm publish'
+      displayName: 'Publish npm package'
 
