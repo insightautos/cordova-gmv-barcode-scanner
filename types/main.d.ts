@@ -21,17 +21,25 @@ declare namespace CordovaPluginMLKitBarcodeScanner {
   }
 
   interface Result {
-    cancelled: boolean;
     text: string;
     format: string | undefined;
     type: string | undefined;
+  }
+
+  interface Error {
+    cancelled: boolean;
+    message: string;
   }
 }
 
 interface CordovaPlugins {
   mlkit: {
     barcodeScanner: {
-      scan(options: CordovaPluginMLKitBarcodeScanner.Options | undefined, successCallback: (result: CordovaPluginMLKitBarcodeScanner.Result) => any, callback: (error: Error & { cancelled: boolean, message: string }) => any): void;
+      scan(
+        options: CordovaPluginMLKitBarcodeScanner.Options | undefined,
+        successCallback: (result: CordovaPluginMLKitBarcodeScanner.Result) => any,
+        callback: (error: CordovaPluginMLKitBarcodeScanner.Error) => any
+      ): void;
     };
   };
 }

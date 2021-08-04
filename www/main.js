@@ -100,7 +100,6 @@ function getBarcodeType(type) {
   MLKitBarcodeScanner.prototype.sendScanRequest = function (settings, success, failure) {
     cordova.exec((data) => {
       success({
-        cancelled: false,
         text: data[0],
         format: getBarcodeFormat(data[1]),
         type: getBarcodeType(data[2])
