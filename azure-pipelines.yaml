@@ -1,0 +1,27 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+# no CI trigger, must be started manual
+trigger: none
+
+# no pull request triggers
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Publish
+  displayName: 'Publish'
+  jobs:
+  - job: PublishToAzureArtifacts
+    displayName: 'Only Master: Publish to Azure Artifacts'
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    steps:
+    - task: npmAuthenticate@0
+      displayName: Setup authentication for AzureDevOps npm feed
+      inputs:
+        workingFile: .npmrc
+    - script: |
+        npm publish
+      displayName: 'Publish npm package'
+
