@@ -69,7 +69,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-
+    
     // Set up camera.
     self.session = [[AVCaptureSession alloc] init];
     self.session.sessionPreset = AVCaptureSessionPresetHigh;
@@ -84,7 +84,6 @@
 
     // Set up camera preview.
     [self setUpCameraPreview];
-
 
     //Parse Cordova settings.
     NSNumber *formats = 0;
@@ -102,8 +101,7 @@
     // Initialize barcode detector.
     MLKBarcodeScannerOptions *options = [[MLKBarcodeScannerOptions alloc] initWithFormats: [formats intValue]];
     self.barcodeDetector = [MLKBarcodeScanner barcodeScannerWithOptions:options];
-
-    }
+}
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
@@ -113,20 +111,36 @@
                                              CGRectGetMidY(self.previewLayer.frame));
 }
 
-- (void)viewDidUnload {
+- (void)dealloc {
     [self cleanupCaptureSession];
-    [super viewDidUnload];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    //Force portrait orientation.
-    [[UIDevice currentDevice] setValue:
-     [NSNumber numberWithInteger: UIInterfaceOrientationPortrait]
-                                forKey:@"orientation"];
-
-    [self.session startRunning];
-
+    
+    AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+    if (authStatus == AVAuthorizationStatusDenied) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Camera permission required" message:@"Access to the camera has been prohibited, please enable it in the settings to continue." preferredStyle:UIAlertControllerStyleAlert];
+        
+        UIAlertAction *primaryAction = [UIAlertAction actionWithTitle:@"Settings" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
+            [self.delegate closeScanner];
+        }];
+        UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+            [self.delegate closeScanner];
+        }];
+        [alert addAction:cancelAction];
+        [alert addAction:primaryAction];
+        alert.preferredAction = primaryAction;
+        [self presentViewController:alert animated:YES completion:nil];
+    } else {
+        //Force portrait orientation.
+        [[UIDevice currentDevice] setValue:
+         [NSNumber numberWithInteger: UIInterfaceOrientationPortrait]
+                                    forKey:@"orientation"];
+        
+        [self.session startRunning];
+    }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -332,7 +346,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 
 #pragma mark - Helper Functions
 
-- (void)focusAtPoint:(id) sender{
+- (void)focusAtPoint:(id) sender {
     NSLog(@"captured touch");
     CGPoint touchPoint = [(UITapGestureRecognizer*)sender locationInView:self.view];
     double focus_x = touchPoint.x/self.previewLayer.frame.size.width;
@@ -416,6 +430,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     Class captureDeviceClass = NSClassFromString(@"AVCaptureDevice");
     if (captureDeviceClass != nil) {
         AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+        AVCapturePhotoSettings *photosettings = [AVCapturePhotoSettings photoSettings];
         if ([device hasTorch] && [device hasFlash]){
 
             [device lockForConfiguration:nil];
@@ -423,26 +438,23 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
             {
                 self.torchButton.backgroundColor = [UIColor colorWithWhite:1 alpha:1];
                 [device setTorchMode:AVCaptureTorchModeOn];
-                [device setFlashMode:AVCaptureFlashModeOn];
+                photosettings.flashMode = AVCaptureFlashModeOn;
                 //torchIsOn = YES;
             }
             else
             {
                 self.torchButton.backgroundColor = [UIColor colorWithWhite:1 alpha:.4];
                 [device setTorchMode:AVCaptureTorchModeOff];
-                [device setFlashMode:AVCaptureFlashModeOff];
+                photosettings.flashMode = AVCaptureFlashModeOff;
                 // torchIsOn = NO;
             }
             [device unlockForConfiguration];
         }
     } }
 
-- (void) closeView :(id)sender{
-
+- (void)closeView:(id)sender{
     [ self cleanupCaptureSession];
-
     [_session stopRunning];
-
     [delegate closeScanner];
 }
 
