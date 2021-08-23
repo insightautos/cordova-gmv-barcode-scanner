@@ -99,7 +99,8 @@ const defaultOptions = {
     PDF417: true,
     Aztec: true
   },
-  detectorSize: 0.6
+  detectorSize: 0.6,
+  mirrorCamera: false
 }
 ```
 
@@ -150,3 +151,5 @@ cordova build ios && cordova run ios
 Under unknown circumstances, an error may occur where the camera is upside down.
 Here is a list of devices that have this problem:
 - Zebra MC330K (Manufacturer: Zebra Technologies, Model: MC33)
+
+Current Solution: When your device have this problem, you can call the plugin with the option "mirrorCamera" and set its value to true. This will rotate the camera stream by 180 degrees.

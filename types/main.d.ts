@@ -18,6 +18,7 @@ declare namespace CordovaPluginMLKitBarcodeScanner {
   interface Options {
     types?: BarcodeTypes;
     detectorSize?: number;
+    mirrorCamera?: boolean;
   }
 
   interface Result {

@@ -263,11 +263,17 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
     void startCamera() {
         mCameraView = findViewById(getResources().getIdentifier("previewView", "id", getPackageName()));
         mCameraView.setPreferredImplementationMode(PreviewView.ImplementationMode.TEXTURE_VIEW);
-        mCameraView.setScaleX(1F);
-        mCameraView.setScaleY(1F);
+
+        Boolean mirrorCamera = getIntent().getBooleanExtra("MirrorCamera", false);
+        if (mirrorCamera) {
+            mCameraView.setScaleX(-1F);
+            mCameraView.setScaleY(-1F);
+        } else {
+            mCameraView.setScaleX(1F);
+            mCameraView.setScaleY(1F);
+        }
 
         //mCameraView.setScaleType(PreviewView.ScaleType.FIT_CENTER);
-
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         cameraProviderFuture.addListener(new Runnable() {

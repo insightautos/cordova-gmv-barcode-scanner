@@ -83,10 +83,12 @@ function getBarcodeType(type) {
 
     // Order of this settings object is critical. It will be passed in a basic array format and must be in the order shown.
     const args = {
-      //Position 1
+      // Position 1
       detectorType: detectorTypes,
-      //Position 2
-      detectorSize: multiplier
+      // Position 2
+      detectorSize: multiplier,
+      // Position 3 (Android only)
+      mirrorCamera: settings.mirrorCamera
     };
     const sendSettings = [];
     for (const key in args) {

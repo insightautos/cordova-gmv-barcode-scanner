@@ -49,6 +49,7 @@
             f.numberStyle = NSNumberFormatterDecimalStyle;
             NSNumber* barcodeFormats = [command argumentAtIndex:0 withDefault:@1234];
             self.cameraViewController.scanAreaSize = (CGFloat)[[command argumentAtIndex:1 withDefault:@.5] floatValue];
+            // index 2 is currently reserved for mirrorCamera on Android
             self.cameraViewController.barcodeFormats = barcodeFormats;
             self.cameraViewController.modalPresentationStyle = UIModalPresentationFullScreen;
 
