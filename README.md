@@ -24,13 +24,13 @@ Usage
 To use the plugin simply call `window.plugins.GMVBarcodeScanner.scan(options, callback)`. See the sample below.
 
 ````javascript
-window.plugins.GMVBarcodeScanner.scan({}, function(err, result) { 
+window.plugins.GMVBarcodeScanner.scan({}, function(err, barcodeValue, barcodeType) { 
     
 	//Handle Errors
 	if(err) return;
 	
 	//Do something with the data.
-	alert(result);
+	alert(barcodeValue);
 	
 });
 ````
@@ -39,23 +39,23 @@ You can also call `scanLicense` or `scanVIN` to use the other scanning abilities
 
 
 ````javascript
-window.plugins.GMVBarcodeScanner.scanVIN(function(err, result) {
+window.plugins.GMVBarcodeScanner.scanVIN(function(err, barcodeValue, barcodeType) {
 	//Handle Errors
 	if(err) return;
 	
 	//Do something with the data.
-	alert(result);
+	alert(barcodeValue);
 	
 }, { width: .5, height: .7 });
 ````
 
 ````javascript
-window.plugins.GMVBarcodeScanner.scanLicense(function(err, result) {
+window.plugins.GMVBarcodeScanner.scanLicense(function(err, barcodeValue, barcodeType) {
 	//Handle Errors
 	if(err) return;
 	
 	//Do something with the data.
-	alert(result);
+	alert(barcodeValue);
 	
 }, { width: .5, height: .7 });
 ````
@@ -109,11 +109,6 @@ var options = {
 	}
 }
 ````
-
-
-### Android Quirks
-
-The `detectorSize` option does not currently exclude the area around the detector from being scanned, which means that anything shown on the preview screen is up for grabs to the barcode detector. On iOS this is done automatically.
 
 ### VIN Scanning
 

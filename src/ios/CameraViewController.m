@@ -105,10 +105,8 @@ static CIContext *gCIContext;
     } else {
         formats = [_barcodeFormats integerValue];
     }
-    //NSLog(@"_barcodeFormats %@, %@", _barcodeFormats, formats);
 
-    // Initialize barcode detector.
-
+    // Initialize barcode detector and text detector.
     MLKBarcodeScannerOptions *barcodeScannerOptions = [[MLKBarcodeScannerOptions alloc] initWithFormats:formats];
     self.mlkBarcodeDetector = [MLKBarcodeScanner barcodeScannerWithOptions:barcodeScannerOptions];
 
@@ -225,28 +223,35 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     //Iterate through barcodes.
     dispatch_sync(dispatch_get_main_queue(), ^{
         for (MLKBarcode *barcode in mlkBarcodes) {
-            if([barcode.rawValue length] < 17) {
-                continue;
-            }
+            if([_barcodeFormats  isEqual: @0]) {
+                if([barcode.rawValue length] < 17) {
+                    continue;
+                }
 
-            NSString * vin = barcode.rawValue;
+                NSString * vin = barcode.rawValue;
 
-            //Remove characters from the set that are not part of standardized VIN structure.
-            NSCharacterSet *doNotWant = [NSCharacterSet characterSetWithCharactersInString:@"ioqIOQ"];
-            vin = [[vin componentsSeparatedByCharactersInSet: doNotWant] componentsJoinedByString: @""];
+                //Remove characters from the set that are not part of standardized VIN structure.
+                NSCharacterSet *doNotWant = [NSCharacterSet characterSetWithCharactersInString:@"ioqIOQ"];
+                vin = [[vin componentsSeparatedByCharactersInSet: doNotWant] componentsJoinedByString: @""];
 
-            //Cut length of VIN down to 17 characters. In testing some barcodes added an 18th character to the result that was invalid, but the rest of the VIN was correct.
-            vin = [vin substringToIndex: MIN(17, [vin length])];
+                //Cut length of VIN down to 17 characters. In testing some barcodes added an 18th character to the result that was invalid, but the rest of the VIN was correct.
+                vin = [vin substringToIndex: MIN(17, [vin length])];
 
-            //If VIN is valid (check digit is correct) then cleanup the session and send results to Cordova.
-            if([self validateVin:vin] == true) {
-                NSLog(@"Scanner: VIN Barcode value: %@",vin);
+                //If VIN is valid (check digit is correct) then cleanup the session and send results to Cordova.
+                if([self validateVin:vin] == true) {
+                    NSLog(@"Scanner: VIN Barcode value: %@",vin);
+                    [ self cleanupCaptureSession];
+                    [_session stopRunning];
+                    [delegate sendResult:vin barcodeType: [NSString stringWithFormat:@"%li", (long)barcode.format]];
+                    break;
+                }
+            } else {
+                NSLog(@"Scanner: Barcode value: %@",barcode.rawValue);
                 [ self cleanupCaptureSession];
                 [_session stopRunning];
-                [delegate sendResult:vin barcodeType: [NSString stringWithFormat:@"%li", (long)barcode.format]];
+                [delegate sendResult:barcode.rawValue barcodeType: [NSString stringWithFormat:@"%li", (long)barcode.format]];
                 break;
             }
-
         }
 
         if([_barcodeFormats  isEqual: @0]) {

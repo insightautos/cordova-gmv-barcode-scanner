@@ -6,8 +6,24 @@ function GMVBarcodeScanner() {
 
 }
 
-GMVBarcodeScanner.prototype.scan = function(params, callback) {
+// GMVDetectorConstants values allow us to pass an integer sum of all the desired barcode types to the scanner.
+var detectionTypes = {
+    Code128: 1,
+    Code39: 2,
+    Code93: 4,
+    CodaBar: 8,
+    DataMatrix: 16,
+    EAN13: 32,
+    EAN8: 64,
+    ITF: 128,
+    QRCode: 256,
+    UPCA: 512,
+    UPCE: 1024,
+    PDF417: 2048,
+    Aztec: 4096
+};
 
+GMVBarcodeScanner.prototype.scan = function(params, callback) {
     // Default settings. Scan every barcode type.
     var settings = {
         types: {
@@ -44,22 +60,7 @@ GMVBarcodeScanner.prototype.scan = function(params, callback) {
 
     var detectorTypes = 0;
 
-    // GMVDetectorConstants values allow us to pass an integer sum of all the desired barcode types to the scanner.
-    var detectionTypes = {
-        Code128: 1,
-        Code39: 2,
-        Code93: 4,
-        CodaBar: 8,
-        DataMatrix: 16,
-        EAN13: 32,
-        EAN8: 64,
-        ITF: 128,
-        QRCode: 256,
-        UPCA: 512,
-        UPCE: 1024,
-        PDF417: 2048,
-        Aztec: 4096
-    };
+
 
     for(var key in settings.types) {
         if(detectionTypes.hasOwnProperty(key) && settings.types.hasOwnProperty(key) && settings.types[key] == true) {
@@ -90,7 +91,14 @@ GMVBarcodeScanner.prototype.scan = function(params, callback) {
 GMVBarcodeScanner.prototype.sendScanRequest = function(settings, callback) {
     callback = typeof callback == "function" ? callback : function() {};
     cordova.exec(function (data) {
-            callback(null, data[0]);
+            for(var key in detectionTypes) {
+                if(detectionTypes.hasOwnProperty(key) && data[1] == detectionTypes[key]) {
+                    data[1] = key;
+                }
+            }
+
+            // err, barcodeValue, barcodeType
+            callback(null, data[0], data[1]);
         },
         function (err){
             switch(err[0]) {
