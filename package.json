@@ -19,6 +19,7 @@
   "main": "www/main.js",
   "scripts": {
     "build": "tsc --project tsconfig.json",
+    "prepublish": "npm run test && npm run build",
     "test": "tslint --project tsconfig.json"
   },
   "repository": {

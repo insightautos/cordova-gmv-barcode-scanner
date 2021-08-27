@@ -1,14 +1,15 @@
 {
   "extends": "./node_modules/mobisys-ts-config/tsconfig.json",
-  "include": ["src"],
+  "include": ["src/*.ts"],
   "compilerOptions": {
     "moduleResolution": "node",
     "module": "esNext",
-    "target": "es5",
+    "target": "ES5",
     "lib": ["dom", "es2015"],
     "outDir": "www",
-    "allowSyntheticDefaultImports": true,
     "declaration": true,
+    "declarationDir": "./types",
+    "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "noEmitOnError": true,
     "removeComments": true,

@@ -13,3 +13,6 @@ gradle/
 # Android files
 local.properties
 gradlew*
+
+# Build directory
+www/
