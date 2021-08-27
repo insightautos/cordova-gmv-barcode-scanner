@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.vision.barcode.Barcode;
 
 import javax.security.auth.callback.Callback;
 
@@ -67,22 +66,24 @@ public class CDVAndroidScanner extends CordovaPlugin {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        
+        Log.d("CDVAndroidScanner", "activity result occurred " + RC_BARCODE_CAPTURE + " - " + requestCode);
+
         if (requestCode == RC_BARCODE_CAPTURE) {
             if (resultCode == CommonStatusCodes.SUCCESS) {
                 Intent d = new Intent();
                 if (data != null) {
-                    Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
+                    String barcodeType = data.getStringExtra("barcodeType");
+                    String barcodeValue = data.getStringExtra("barcodeValue");
                     JSONArray result = new JSONArray();
-                    result.put(barcode.rawValue);
-                    result.put("");
+                    result.put(barcodeValue);
+                    result.put(barcodeType);
                     result.put("");
                     mCallbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
 
-                    Log.d("CDVAndroidScanner", "Barcode read: " + barcode.displayValue);
+                    Log.d("CDVAndroidScanner", "Barcode read: " + barcodeValue);
                 }
             } else {
-                String err = data.getParcelableExtra("err");
+                String err = data.getStringExtra("err");
                 JSONArray result = new JSONArray();
                 result.put(err);
                 result.put("");

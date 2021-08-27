@@ -20,7 +20,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.hardware.Camera;
-import android.support.annotation.RequiresPermission;
+import androidx.annotation.RequiresPermission;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -171,6 +171,8 @@ public class CameraSourcePreview extends ViewGroup {
         }
     }
 
+    int[] cropParameters = new int[4];
+
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         int width = 320;
@@ -201,6 +203,7 @@ public class CameraSourcePreview extends ViewGroup {
         int leftOffset = ((int)((float) layoutHeight / (float) height) * width - childWidth) / 2;
         int topOffset = 0;
 
+        double ratio = (0.0 + layoutHeight) / (0.0 + height);
 
         if (childHeight > layoutHeight) {
             childWidth = layoutWidth;
@@ -208,15 +211,26 @@ public class CameraSourcePreview extends ViewGroup {
 
             leftOffset = 0;
             topOffset = ((int)((float) layoutWidth / (float) width) * height - childHeight) / 2;
+
+            ratio = (0.0 + layoutWidth) / (0.0 + width);
         }
 
-        mSurfaceView.layout(leftOffset, topOffset, childWidth, childHeight);
+        Log.d(TAG, "Camera Source Preview Inputs " + left +" - " + top +" - " + right +" - " + bottom);
+        Log.d(TAG, "Camera Source Preview Sizes " + width +" - " + height +" - " + layoutWidth +" - " + layoutHeight);
+        Log.d(TAG, "Camera Source Preview Child " + childWidth +" - " + childHeight +" - " + leftOffset +" - " + topOffset);
 
+        //mSurfaceView.layout(leftOffset, topOffset, childWidth, childHeight);
+        mSurfaceView.layout(leftOffset/2, topOffset/2, childWidth + leftOffset/2, childHeight + topOffset/2);
 
         int actualWidth = (int) (layoutWidth*ViewFinderWidth);
         int actualHeight = (int) (layoutHeight*ViewFinderHeight);
 
         mViewFinderView.layout(layoutWidth/2 -actualWidth/2,layoutHeight/2 - actualHeight/2, layoutWidth/2 + actualWidth/2, layoutHeight/2 + actualHeight/2);
+
+        cropParameters[0] = (int) ((layoutWidth/2 -actualWidth/2) / ratio);
+        cropParameters[1] = (int) ((layoutHeight/2 -actualHeight/2) / ratio);
+        cropParameters[2] = (int) (actualWidth / ratio);
+        cropParameters[3] = (int) (actualHeight / ratio);
 
         int buttonSize = dpToPx(45);
         int torchLeft = (int) layoutWidth/2 + actualWidth/2 + (layoutWidth - (layoutWidth/2 + actualWidth/2))/2 - buttonSize/2;

@@ -21,20 +21,26 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.pm.ActivityInfo;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
+
+import android.os.SystemClock;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -52,23 +58,32 @@ import com.dealrinc.gmvScanner.ui.camera.CameraSource;
 import com.dealrinc.gmvScanner.ui.camera.CameraSourcePreview;
 
 import com.dealrinc.gmvScanner.ui.camera.GraphicOverlay;
-import com.google.android.gms.vision.MultiProcessor;
-import com.google.android.gms.vision.barcode.Barcode;
-import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.gms.common.images.Size;
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Activity for the multi-tracker app.  This app detects barcodes and displays the value with the
  * rear facing camera. During detection overlay graphics are drawn to indicate the position,
  * size, and ID of each barcode.
  */
-public final class BarcodeCaptureActivity extends AppCompatActivity implements BarcodeGraphicTracker.BarcodeUpdateListener {
+public final class BarcodeCaptureActivity extends AppCompatActivity {
     private static final String TAG = "Barcode-reader";
 
     // intent request code to handle updating play services if needed.
     private static final int RC_HANDLE_GMS = 9001;
+    private static final int RC_BARCODE_CAPTURE = 9001;
 
     // permission request codes need to be < 256
     private static final int RC_HANDLE_CAMERA_PERM = 2;
@@ -82,12 +97,14 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
-    private GraphicOverlay<BarcodeGraphic> mGraphicOverlay;
+    private GraphicOverlay mGraphicOverlay;
 
     // helper objects for detecting taps and pinches.
     private ScaleGestureDetector scaleGestureDetector;
     private GestureDetector gestureDetector;
 
+    private volatile static String TextValue;
+    private volatile static String BarcodeValue;
     /**
      * Initializes the UI and creates the detector pipeline.
      */
@@ -103,23 +120,12 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         // status bar is hidden, so hide that too if necessary.
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        if(getActionBar() != null) {
-            getActionBar().hide();
-        }
-
-        if(getSupportActionBar() != null) {
-            getSupportActionBar().hide();
-        }
 
         setContentView(getResources().getIdentifier("barcode_capture", "layout", getPackageName()));
-
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         mPreview = (CameraSourcePreview) findViewById(getResources().getIdentifier("preview", "id", getPackageName()));
         mPreview.ViewFinderWidth = ViewFinderWidth;
         mPreview.ViewFinderHeight = ViewFinderHeight;
-        mGraphicOverlay = (GraphicOverlay<BarcodeGraphic>) findViewById(getResources().getIdentifier("graphicOverlay", "id", getPackageName()));
-
 
         // read parameters from the intent used to launch the activity.
         DetectionTypes = getIntent().getIntExtra("DetectionTypes", 1234);
@@ -193,63 +199,34 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     private void createCameraSource(boolean autoFocus, boolean useFlash) {
         Context context = getApplicationContext();
 
-
         int detectionType = 0;
 
         if(DetectionTypes == 0) {
-            detectionType = (Barcode.CODE_39|Barcode.DATA_MATRIX);
+            detectionType = (com.google.mlkit.vision.barcode.Barcode.FORMAT_CODE_39
+                    |com.google.mlkit.vision.barcode.Barcode.FORMAT_DATA_MATRIX
+                    |com.google.mlkit.vision.barcode.Barcode.FORMAT_QR_CODE);
         } else if(DetectionTypes == 1234) {
 
         } else {
             detectionType = DetectionTypes;
         }
 
+        BarcodeScannerOptions barcodeScannerOptions = new BarcodeScannerOptions.Builder().setBarcodeFormats(detectionType).build();
+        barcodeScanner = BarcodeScanning.getClient(barcodeScannerOptions);
 
-        // A barcode detector is created to track barcodes.  An associated multi-processor instance
-        // is set to receive the barcode detection results, track the barcodes, and maintain
-        // graphics for each barcode on screen.  The factory is used by the multi-processor to
-        // create a separate tracker instance for each barcode.
-        BarcodeDetector barcodeDetector = new BarcodeDetector.Builder(context).setBarcodeFormats(detectionType).build();
-        BarcodeTrackerFactory barcodeFactory = new BarcodeTrackerFactory(mGraphicOverlay, this);
-        barcodeDetector.setProcessor(
-                new MultiProcessor.Builder<>(barcodeFactory).build());
-
-        if (!barcodeDetector.isOperational()) {
-            // Note: The first time that an app using the barcode or face API is installed on a
-            // device, GMS will download a native libraries to the device in order to do detection.
-            // Usually this completes before the app is run for the first time.  But if that
-            // download has not yet completed, then the above call will not detect any barcodes
-            // and/or faces.
-            //
-            // isOperational() can be used to check if the required native libraries are currently
-            // available.  The detectors will automatically become operational once the library
-            // downloads complete on device.
-            Log.w(TAG, "Detector dependencies are not yet available.");
-
-            // Check for low storage.  If there is low storage, the native library will not be
-            // downloaded, so detection will not become operational.
-            IntentFilter lowstorageFilter = new IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW);
-            boolean hasLowStorage = registerReceiver(null, lowstorageFilter) != null;
-
-            if (hasLowStorage) {
-                Toast.makeText(this, getResources().getIdentifier("low_storage_error", "string", getPackageName()), Toast.LENGTH_LONG).show();
-                Log.w(TAG, getString(getResources().getIdentifier("low_storage_error", "string", getPackageName())));
-            }
-        }
+        textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        int width = size.x;
-        int height = size.y;
 
         // Creates and starts the camera.  Note that this uses a higher resolution in comparison
         // to other detection examples to enable the barcode detector to detect small barcodes
         // at long distances.
-        CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), barcodeDetector)
+        CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), this, mPreview)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setRequestedPreviewSize(1600, 1024)
-                .setRequestedFps(15.0f);
+                .setRequestedPreviewSize(2000, 1500)
+                .setRequestedFps(10.0f);
 
         // make sure that auto focus is an available option
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -260,6 +237,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         mCameraSource = builder
                 .setFlashMode(useFlash ? Camera.Parameters.FLASH_MODE_TORCH : null)
                 .build();
+
+        mCameraSource.ViewFinderWidth = ViewFinderWidth;
+        mCameraSource.ViewFinderHeight = ViewFinderHeight;
     }
 
     /**
@@ -289,7 +269,12 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        mCameraSource.release();
+        mCameraSource = null;
+        barcodeScanner.close();
+        barcodeScanner = null;
+        textRecognizer.close();
+        textRecognizer = null;
         if (mPreview != null) {
             mPreview.release();
         }
@@ -499,34 +484,108 @@ public final class BarcodeCaptureActivity extends AppCompatActivity implements B
         return getCheckDigit(vin) == vin.charAt(8);
     }
 
-    @Override
-    public void onBarcodeDetected(Barcode barcode) {
-        //do something with barcode data returned
+    BarcodeScanner barcodeScanner;
+    TextRecognizer textRecognizer;
 
-        if(DetectionTypes == 0) {
-            String val = barcode.rawValue;
-            if(val.length() < 17) {
-                return;
-            }
-            val = val.replaceAll("[ioqIOQ]", "");
+    boolean detectionActive = false;
 
-            val = val.substring(0, Math.min(val.length(), 17));
-            
-            barcode.rawValue = val;
+    int processBarcodeFrames = 0;
+    int lastTextCheck = 0;
 
-            if(validateVin(val)) {
-                Intent data = new Intent();
-                data.putExtra(BarcodeObject, barcode);
-                setResult(CommonStatusCodes.SUCCESS, data);
-                finish();
-            }
+    public void detectBarcodes(Bitmap bitmap, long frameStartMs) {
+        //Log.d(TAG, "detectionCalled");
 
-        } else {
-            Intent data = new Intent();
-            data.putExtra(BarcodeObject, barcode);
-            setResult(CommonStatusCodes.SUCCESS, data);
-            finish();
+        if (detectionActive) {
+            //Log.v(TAG, "Skipping Frame");
+            return;
         }
+        detectionActive = true;
 
+        InputImage inputImage = InputImage.fromBitmap(bitmap, processBarcodeFrames % 2 == 0 ? 0 : 180);
+
+        final long detectorStartMs = SystemClock.elapsedRealtime();
+        Task<List<com.google.mlkit.vision.barcode.Barcode>> task = barcodeScanner.process(inputImage);
+        task.addOnSuccessListener((List<com.google.mlkit.vision.barcode.Barcode> barcodes) -> {
+            if (barcodes.isEmpty()) {
+                //Log.v(TAG, "No barcode has been detected");
+            }
+            for (int i = 0; i < barcodes.size(); ++i) {
+                com.google.mlkit.vision.barcode.Barcode barcode = barcodes.get(i);
+
+                String val = barcode.getRawValue();
+                Log.v(TAG, "Scanned Barcode: " +val);
+                if(val.length() < 17) {
+                    continue;
+                }
+                val = val.replaceAll("[ioqIOQ]", "");
+
+                val = val.substring(0, Math.min(val.length(), 17));
+
+                if(validateVin(val)) {
+                    Log.v(TAG, "Detected VIN: " +val);
+                    Intent data = new Intent();
+                    data.putExtra("barcodeType", barcode.getValueType());
+                    data.putExtra("barcodeValue", val);
+                    setResult(CommonStatusCodes.SUCCESS, data);
+                    finish();
+                }
+
+
+            }
+
+            processBarcodeFrames ++;
+
+//            long endMs = SystemClock.elapsedRealtime();
+//            long currentFrameLatencyMs = endMs - frameStartMs;
+//            long currentDetectorLatencyMs = endMs - detectorStartMs;
+//            Log.d(TAG, "Frame latency:" + currentFrameLatencyMs);
+//            Log.d(TAG, "Detector latency:" + currentDetectorLatencyMs);
+            if (DetectionTypes == 0 && processBarcodeFrames > 3) {
+                InputImage textInputImage;
+                if (lastTextCheck == 0) {
+                    lastTextCheck = 1;
+                    textInputImage = InputImage.fromBitmap(bitmap, 180);
+                } else {
+                    textInputImage = InputImage.fromBitmap(bitmap, 0);
+                    lastTextCheck = 0;
+                }
+                processBarcodeFrames = 0;
+                Task<Text> textTask = textRecognizer.process(textInputImage);
+                textTask.addOnSuccessListener((Text text) -> {
+                    if (!text.getText().equals("")) {
+                        List<Text.TextBlock> textBlocks = text.getTextBlocks();
+                        for (int i = 0; i < textBlocks.size(); ++i) {
+                            Text.TextBlock textBlock = textBlocks.get(i);
+
+                            String val = textBlock.getText();
+                            // Match vins that have the correct pattern, must be: 1. 17 digits long, 2. have 0-9 or X in the 9th digit, 3. have the last 6 digits be numbers
+                            Pattern p = Pattern.compile("([ABCDEFGHJKLMNPRSTUVWXYZ0-9]{8}[0-9X]{1}[ABCDEFGHJKLMNPRSTUVWXYZ0-9]{2}[0-9]{6})");
+                            Matcher m = p.matcher(val);
+                            while (m.find()) {
+                                if(validateVin(m.group(1))) {
+                                    Log.v(TAG, "Detected VIN from Text: " + m.group(1));
+                                    Intent data = new Intent();
+                                    data.putExtra("barcodeType", "OCR");
+                                    data.putExtra("barcodeValue", m.group(1));
+                                    setResult(CommonStatusCodes.SUCCESS, data);
+                                    finishActivity(RC_BARCODE_CAPTURE);
+                                    finish();
+                                }
+                            }
+                        }
+                    }
+                    detectionActive = false;
+                    //Log.v(TAG, "Frame Processed");
+                }).addOnFailureListener((Exception e) -> {
+                    Log.e(TAG, "Barcode detection failed " + e);
+                    detectionActive = false;
+                });
+            } else {
+                detectionActive = false;
+            }
+        }).addOnFailureListener((Exception e) -> {
+            Log.e(TAG, "Barcode detection failed " + e);
+            detectionActive = false;
+        });
     }
 }

@@ -25,7 +25,6 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.vision.barcode.Barcode;
 
 /**
  * Main activity demonstrating how to pass extra parameters to an activity that
@@ -53,8 +52,8 @@ public class SecondaryActivity extends Activity implements View.OnClickListener 
         Intent intent = new Intent(this, BarcodeCaptureActivity.class);
 
         intent.putExtra("DetectionTypes", getIntent().getIntExtra("DetectionTypes", 1234));
-        intent.putExtra("ViewFinderWidth", getIntent().getDoubleExtra("DetectionTypes", .5));
-        intent.putExtra("ViewFinderHeight", getIntent().getDoubleExtra("DetectionTypes", .7));
+        intent.putExtra("ViewFinderWidth", getIntent().getDoubleExtra("ViewFinderWidth", .5));
+        intent.putExtra("ViewFinderHeight", getIntent().getDoubleExtra("ViewFinderHeight", .7));
 
         startActivityForResult(intent, RC_BARCODE_CAPTURE);
 
@@ -105,8 +104,9 @@ public class SecondaryActivity extends Activity implements View.OnClickListener 
             Intent d = new Intent();
             if (resultCode == CommonStatusCodes.SUCCESS) {
                 if (data != null) {
-                    Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-                    d.putExtra(BarcodeObject, barcode);
+                    d.putExtra("barcodeType", data.getStringExtra("barcodeType"));
+                    d.putExtra("barcodeValue", data.getStringExtra("barcodeValue"));
+
                     setResult(CommonStatusCodes.SUCCESS, data);
                 } else {
                     d.putExtra("err", "USER_CANCELLED");

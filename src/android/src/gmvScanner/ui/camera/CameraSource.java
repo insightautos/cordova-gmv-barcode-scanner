@@ -19,25 +19,39 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.os.Build;
+import android.os.Environment;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresPermission;
-import android.support.annotation.StringDef;
+import android.provider.MediaStore;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresPermission;
+import androidx.annotation.StringDef;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 
+import com.dealrinc.gmvScanner.BarcodeCaptureActivity;
 import com.google.android.gms.common.images.Size;
-import com.google.android.gms.vision.Detector;
-import com.google.android.gms.vision.Frame;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.Thread.State;
 import java.lang.annotation.Retention;
@@ -132,10 +146,13 @@ public class CameraSource {
 
     // These values may be requested by the caller.  Due to hardware limitations, we may need to
     // select close, but not exactly the same values for these.
-    private float mRequestedFps = 30.0f;
+    private float mRequestedFps = 15.0f;
     private int mRequestedPreviewWidth = 1024;
     private int mRequestedPreviewHeight = 768;
+    private CameraSourcePreview mPreview;
 
+    public double ViewFinderWidth = .5;
+    public double ViewFinderHeight = .7;
 
     private String mFocusMode = null;
     private String mFlashMode = null;
@@ -168,14 +185,14 @@ public class CameraSource {
      * Builder for configuring and creating an associated camera source.
      */
     public static class Builder {
-        private final Detector<?> mDetector;
+        private final BarcodeCaptureActivity mDetector;
         private CameraSource mCameraSource = new CameraSource();
 
         /**
          * Creates a camera source builder with the supplied context and detector.  Camera preview
          * images will be streamed to the associated detector upon starting the camera source.
          */
-        public Builder(Context context, Detector<?> detector) {
+        public Builder(Context context, BarcodeCaptureActivity detector, CameraSourcePreview mPreview) {
             if (context == null) {
                 throw new IllegalArgumentException("No context supplied.");
             }
@@ -185,6 +202,7 @@ public class CameraSource {
 
             mDetector = detector;
             mCameraSource.mContext = context;
+            mCameraSource.mPreview = mPreview;
         }
 
         /**
@@ -447,7 +465,7 @@ public class CameraSource {
      * {@link #CAMERA_FACING_FRONT}.
      */
     public int getCameraFacing() {
-        return mFacing;
+        return CameraInfo.CAMERA_FACING_BACK;
     }
 
     public int doZoom(float scale) {
@@ -1000,6 +1018,7 @@ public class CameraSource {
             default:
                 Log.e(TAG, "Bad rotation value: " + rotation);
         }
+        degrees = 0;
 
         CameraInfo cameraInfo = new CameraInfo();
         Camera.getCameraInfo(cameraId, cameraInfo);
@@ -1013,6 +1032,8 @@ public class CameraSource {
             angle = (cameraInfo.orientation - degrees + 360) % 360;
             displayAngle = angle;
         }
+        angle = (cameraInfo.orientation - degrees + 360) % 360;
+        displayAngle = angle;
 
         // This corresponds to the rotation constants in {@link Frame}.
         mRotation = angle / 90;
@@ -1075,7 +1096,7 @@ public class CameraSource {
      * received frame will immediately start on the same thread.
      */
     private class FrameProcessingRunnable implements Runnable {
-        private Detector<?> mDetector;
+        private BarcodeCaptureActivity mDetector;
         private long mStartTimeMillis = SystemClock.elapsedRealtime();
 
         // This lock guards all of the member variables below.
@@ -1086,8 +1107,9 @@ public class CameraSource {
         private long mPendingTimeMillis;
         private int mPendingFrameId = 0;
         private ByteBuffer mPendingFrameData;
+        private byte[] mPendingFrameDataBytes;
 
-        FrameProcessingRunnable(Detector<?> detector) {
+        FrameProcessingRunnable(BarcodeCaptureActivity detector) {
             mDetector = detector;
         }
 
@@ -1098,7 +1120,7 @@ public class CameraSource {
         @SuppressLint("Assert")
         void release() {
             assert (mProcessingThread.getState() == State.TERMINATED);
-            mDetector.release();
+            //mDetector.release();
             mDetector = null;
         }
 
@@ -1136,7 +1158,7 @@ public class CameraSource {
                 mPendingTimeMillis = SystemClock.elapsedRealtime() - mStartTimeMillis;
                 mPendingFrameId++;
                 mPendingFrameData = mBytesToByteBuffer.get(data);
-
+                mPendingFrameDataBytes = data;
                 // Notify the processor thread if it is waiting on the next frame (see below).
                 mLock.notifyAll();
             }
@@ -1158,10 +1180,19 @@ public class CameraSource {
          */
         @Override
         public void run() {
-            Frame outputFrame;
+            Bitmap croppedBmp;
             ByteBuffer data;
 
+            RenderScript rs = RenderScript.create(mContext);
+            ScriptIntrinsicYuvToRGB yubToRgbIntrinsic = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs));
+            int yuvDataLength = mPreviewSize.getWidth()*mPreviewSize.getHeight()*3/2;
+            Allocation aIn = Allocation.createSized(rs, Element.U8(rs), yuvDataLength);
+            Bitmap bmpout = Bitmap.createBitmap(mPreviewSize.getWidth(), mPreviewSize.getHeight(), Bitmap.Config.ARGB_8888);
+            Allocation aOut = Allocation.createFromBitmap(rs, bmpout);
+            yubToRgbIntrinsic.setInput(aIn);
+
             while (true) {
+                long frameStartMs = SystemClock.elapsedRealtime();
                 synchronized (mLock) {
                     while (mActive && (mPendingFrameData == null)) {
                         try {
@@ -1182,27 +1213,21 @@ public class CameraSource {
                         return;
                     }
 
-                    outputFrame = new Frame.Builder()
-                            .setImageData(mPendingFrameData, mPreviewSize.getWidth(),
-                                    mPreviewSize.getHeight(), ImageFormat.NV21)
-                            .setId(mPendingFrameId)
-                            .setTimestampMillis(mPendingTimeMillis)
-                            .setRotation(mRotation)
-                            .build();
+//                    Log.d(TAG, "Image Crop Parameters " + mPreview.cropParameters[0] +" - " + mPreview.cropParameters[1] +" - " + mPreview.cropParameters[2] +" - " + mPreview.cropParameters[3] +" - " + bmpout.getHeight() +" - " +  bmpout.getWidth());
 
-                    // Hold onto the frame data locally, so that we can use this for detection
-                    // below.  We need to clear mPendingFrameData to ensure that this buffer isn't
-                    // recycled back to the camera before we are done using that data.
+                    aIn.copyFrom(mPendingFrameDataBytes);
+                    yubToRgbIntrinsic.forEach(aOut);
+                    aOut.copyTo(bmpout);
+
+                    croppedBmp = Bitmap.createBitmap(bmpout, mPreview.cropParameters[1], mPreview.cropParameters[0]*2, mPreview.cropParameters[3], mPreview.cropParameters[2]);
+
                     data = mPendingFrameData;
                     mPendingFrameData = null;
+                    mPendingFrameDataBytes = null;
                 }
 
-                // The code below needs to run outside of synchronization, because this will allow
-                // the camera to add pending frame(s) while we are running detection on the current
-                // frame.
-
                 try {
-                    mDetector.receiveFrame(outputFrame);
+                    mDetector.detectBarcodes(croppedBmp, frameStartMs);
                 } catch (Throwable t) {
                     Log.e(TAG, "Exception thrown from receiver.", t);
                 } finally {
