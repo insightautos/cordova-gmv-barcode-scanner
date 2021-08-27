@@ -8,8 +8,8 @@
         
     <engines>
         <engine name="cordova" version=">=7.1.0"/>
-        <engine name="cordova-android" version=">=6.3.0"/>
-        <engine name="cordova-ios" version=">=4.5.0"/>
+        <engine name="cordova-android" version=">=9.1.0"/>
+        <engine name="cordova-ios" version=">=6.2.0"/>
     </engines>
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
@@ -20,7 +20,12 @@
         <framework src="Foundation.framework"/>
         <framework src="AVFoundation.framework"/>
         <framework src="UIKit.framework"/>
-        <framework spec="~&gt; 1.1" src="GoogleMobileVision/BarcodeDetector" type="podspec"/>
+        <podspec>
+            <pods>
+                <pod name="GoogleMLKit/BarcodeScanning" spec="~> 2.3" />
+                <pod name="GoogleMLKit/TextRecognition" spec="~> 2.3" />
+            </pods>
+        </podspec>
         <header-file src="src/ios/CDViOSScanner.h"/>
         <source-file src="src/ios/CDViOSScanner.m"/>
         <header-file src="src/ios/CameraViewController.h"/>

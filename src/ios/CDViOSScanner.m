@@ -68,12 +68,12 @@
     
 }
 
--(void)sendResult:(NSString *)value
+-(void)sendResult:(NSString *)value barcodeType:(NSString *)type
 {
     [self.cameraViewController dismissViewControllerAnimated:NO completion:nil];
     _scannerOpen = NO;
-    
-    NSArray *response = @[value, @"", @""];
+
+    NSArray *response = @[value, type, @""];
     CDVPluginResult *pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:response];
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:_callback];

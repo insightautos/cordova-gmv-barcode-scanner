@@ -559,7 +559,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
 
                             String val = textBlock.getText();
                             // Match vins that have the correct pattern, must be: 1. 17 digits long, 2. have 0-9 or X in the 9th digit, 3. have the last 6 digits be numbers
-                            Pattern p = Pattern.compile("([ABCDEFGHJKLMNPRSTUVWXYZ0-9]{8}[0-9X]{1}[ABCDEFGHJKLMNPRSTUVWXYZ0-9]{2}[0-9]{6})");
+                            Pattern p = Pattern.compile("([ABCDEFGHJKLMNPRSTUVWXYZ0-9]{8}[0-9X]{1}[ABCDEFGHJKLMNPRSTUVWXYZ0-9]{3}[0-9]{5})");
                             Matcher m = p.matcher(val);
                             while (m.find()) {
                                 if(validateVin(m.group(1))) {
