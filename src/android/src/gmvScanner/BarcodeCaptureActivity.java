@@ -585,7 +585,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
                     if(validateVin(val)) {
                         Log.v(TAG, "Detected VIN: " +val);
                         Intent data = new Intent();
-                        data.putExtra("barcodeType", barcode.getValueType());
+                        data.putExtra("barcodeType", String.valueOf(barcode.getValueType()));
                         data.putExtra("barcodeValue", val);
                         setResult(CommonStatusCodes.SUCCESS, data);
                         finish();
@@ -593,7 +593,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
                 } else {
                     Log.v(TAG, "Detected Barcode: " +val);
                     Intent data = new Intent();
-                    data.putExtra("barcodeType", barcode.getValueType());
+                    data.putExtra("barcodeType", String.valueOf(barcode.getValueType()));
                     data.putExtra("barcodeValue", val);
                     setResult(CommonStatusCodes.SUCCESS, data);
                     finish();
