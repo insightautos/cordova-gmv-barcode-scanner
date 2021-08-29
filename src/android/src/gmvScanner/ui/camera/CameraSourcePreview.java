@@ -43,7 +43,7 @@ public class CameraSourcePreview extends ViewGroup {
     private Button mTorchButton;
     private boolean mStartRequested;
     private boolean mSurfaceAvailable;
-    private CameraSource mCameraSource;
+    public CameraSource mCameraSource;
     private boolean mFlashState = false;
 
     public double ViewFinderWidth = .5;
@@ -227,8 +227,8 @@ public class CameraSourcePreview extends ViewGroup {
 
         mViewFinderView.layout(layoutWidth/2 -actualWidth/2,layoutHeight/2 - actualHeight/2, layoutWidth/2 + actualWidth/2, layoutHeight/2 + actualHeight/2);
 
-        cropParameters[0] = (int) ((layoutWidth/2 -actualWidth/2) / ratio);
-        cropParameters[1] = (int) ((layoutHeight/2 -actualHeight/2) / ratio);
+        cropParameters[0] = (int) ((layoutWidth/2 -actualWidth/2 - leftOffset*2) / ratio);
+        cropParameters[1] = (int) ((layoutHeight/2 -actualHeight/2 - topOffset*2) / ratio);
         cropParameters[2] = (int) (actualWidth / ratio);
         cropParameters[3] = (int) (actualHeight / ratio);
 

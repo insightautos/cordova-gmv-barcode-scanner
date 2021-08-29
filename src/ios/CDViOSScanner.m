@@ -56,6 +56,7 @@
             NSNumber * barcodeFormats = [command argumentAtIndex:0 withDefault:@1234];
             self.cameraViewController.scanAreaWidth = (CGFloat)[[command argumentAtIndex:1 withDefault:@.5] floatValue];
             self.cameraViewController.scanAreaHeight = (CGFloat)[[command argumentAtIndex:2 withDefault:@.7] floatValue];
+            self.cameraViewController.scanAreaZoom = (CGFloat)[[command argumentAtIndex:3 withDefault:@1.0] floatValue];
             self.cameraViewController.barcodeFormats = barcodeFormats;
             self.cameraViewController.modalPresentationStyle = UIModalPresentationFullScreen;
 

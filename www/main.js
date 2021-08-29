@@ -43,7 +43,8 @@ GMVBarcodeScanner.prototype.scan = function(params, callback) {
         },
         detectorSize: {
             width: .5,
-            height: .7
+            height: .7,
+            zoom: 1,
         }
     };
 
@@ -72,10 +73,15 @@ GMVBarcodeScanner.prototype.scan = function(params, callback) {
     var stngs = {
         //Position 1
         detectorType: detectorTypes,
+
         //Position 2
         detectorWidth: settings.detectorSize.width,
+
         //Position 3
-        detectorHeight: settings.detectorSize.height
+        detectorHeight: settings.detectorSize.height,
+
+        //Position 4
+        detectorZoom: settings.detectorSize.zoom,
     };
 
     var sendSettings = [];
@@ -117,13 +123,14 @@ GMVBarcodeScanner.prototype.sendScanRequest = function(settings, callback) {
 };
 
 GMVBarcodeScanner.prototype.scanLicense = function(callback, settings) {
-    var width = typeof settings != "undefined" && settings.width ? settings.width : .5,
-        height = typeof settings != "undefined" && settings.height ? settings.height : .7;
+    var width = typeof settings != "undefined" && settings.width ? settings.width : .6,
+        height = typeof settings != "undefined" && settings.height ? settings.height : .6,
+        zoom = 1.3;
 
     var that = this;
 
     // Send request with PDF417 scanning only.
-    this.sendScanRequest([2048, width, height], function(err, data) {
+    this.sendScanRequest([2048, width, height, zoom], function(err, data) {
         if(err) return callback(err);
 
         var licenseProcessingResult = that.processLicenseResult(data);
@@ -137,10 +144,11 @@ GMVBarcodeScanner.prototype.scanLicense = function(callback, settings) {
 
 GMVBarcodeScanner.prototype.scanVIN = function (callback, settings) {
     var width = typeof settings != "undefined" && settings.width ? settings.width : .5,
-        height = typeof settings != "undefined" && settings.height ? settings.height : .7;
+        height = typeof settings != "undefined" && settings.height ? settings.height : .7,
+        zoom = 1;
 
     // Send the request for VIN scanning only.
-    this.sendScanRequest([0, width, height], callback);
+    this.sendScanRequest([0, width, height, zoom], callback);
 };
 
 GMVBarcodeScanner.prototype.processLicenseResult = function(result) {

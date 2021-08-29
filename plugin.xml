@@ -20,12 +20,8 @@
         <framework src="Foundation.framework"/>
         <framework src="AVFoundation.framework"/>
         <framework src="UIKit.framework"/>
-        <podspec>
-            <pods>
-                <pod name="GoogleMLKit/BarcodeScanning" spec="~> 2.3" />
-                <pod name="GoogleMLKit/TextRecognition" spec="~> 2.3" />
-            </pods>
-        </podspec>
+        <framework src="GoogleMLKit/BarcodeScanning" type="podspec" spec="~> 2.3" />
+        <framework src="GoogleMLKit/TextRecognition" type="podspec" spec="~> 2.3" />
         <header-file src="src/ios/CDViOSScanner.h"/>
         <source-file src="src/ios/CDViOSScanner.m"/>
         <header-file src="src/ios/CameraViewController.h"/>

@@ -36,8 +36,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskExecutors;
 import com.google.android.material.snackbar.Snackbar;
 
+import android.os.Environment;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.SparseArray;
@@ -58,7 +60,6 @@ import com.dealrinc.gmvScanner.ui.camera.CameraSource;
 import com.dealrinc.gmvScanner.ui.camera.CameraSourcePreview;
 
 import com.dealrinc.gmvScanner.ui.camera.GraphicOverlay;
-import com.google.android.gms.common.images.Size;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
@@ -68,6 +69,8 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -92,6 +95,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
     public Integer DetectionTypes;
     public double ViewFinderWidth = .5;
     public double ViewFinderHeight = .7;
+    public float ViewFinderZoom = 1.0f;
 
     public static final String BarcodeObject = "Barcode";
 
@@ -124,13 +128,17 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
         setContentView(getResources().getIdentifier("barcode_capture", "layout", getPackageName()));
 
         mPreview = (CameraSourcePreview) findViewById(getResources().getIdentifier("preview", "id", getPackageName()));
-        mPreview.ViewFinderWidth = ViewFinderWidth;
-        mPreview.ViewFinderHeight = ViewFinderHeight;
 
         // read parameters from the intent used to launch the activity.
         DetectionTypes = getIntent().getIntExtra("DetectionTypes", 1234);
         ViewFinderWidth = getIntent().getDoubleExtra("ViewFinderWidth", .5);
         ViewFinderHeight = getIntent().getDoubleExtra("ViewFinderHeight", .7);
+        ViewFinderZoom = getIntent().getFloatExtra("ViewFinderZoom", 1.0f);
+
+        mPreview.ViewFinderWidth = ViewFinderWidth;
+        mPreview.ViewFinderHeight = ViewFinderHeight;
+
+        Log.d(TAG, "Cordova Input Parameters. DetectionTypes: " + DetectionTypes + " ViewFinderWidth: " + ViewFinderWidth + " ViewFinderHeight: " + ViewFinderHeight + " ViewFinderZoom: "  + ViewFinderZoom);
 
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
@@ -225,8 +233,9 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
         // at long distances.
         CameraSource.Builder builder = new CameraSource.Builder(getApplicationContext(), this, mPreview)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setRequestedPreviewSize(2000, 1500)
-                .setRequestedFps(10.0f);
+                .setRequestedPreviewSize(4000, 3000)
+                //.setRequestedPreviewSize(1500, 1000)
+                .setRequestedFps(30.0f);
 
         // make sure that auto focus is an available option
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
@@ -240,6 +249,10 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
 
         mCameraSource.ViewFinderWidth = ViewFinderWidth;
         mCameraSource.ViewFinderHeight = ViewFinderHeight;
+        mCameraSource.ViewFinderZoom = ViewFinderZoom;
+        mPreview.mCameraSource = mCameraSource;
+        Log.i(TAG, "Before camera layout");
+        mPreview.invalidate();
     }
 
     /**
@@ -487,6 +500,41 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
     BarcodeScanner barcodeScanner;
     TextRecognizer textRecognizer;
 
+    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+
+        return Bitmap.createScaledBitmap(image, width, height, true);
+    }
+
+    public void saveToInternalStorage(Bitmap bitmap) {
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/barcode_frames");
+        myDir.mkdirs();
+
+        String fname = "CroppedCameraFrame.jpg";
+
+        File file = new File(myDir, fname);
+        if (file.exists()) file.delete ();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     boolean detectionActive = false;
 
     int processBarcodeFrames = 0;
@@ -500,11 +548,22 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
             return;
         }
         detectionActive = true;
+        if (DetectionTypes == 0) {
+            // Resizing for VIN detection because we don't need the max resolution.
+            bitmap = getResizedBitmap(bitmap, 1200);
+        }
+
+        /*
+         For Debug Purposes.
+         Must add `<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>` to AndroidManifest.xml, and then provide permissions to the app from the android app settings.
+        */
+        //saveToInternalStorage(bitmap);
 
         InputImage inputImage = InputImage.fromBitmap(bitmap, processBarcodeFrames % 2 == 0 ? 0 : 180);
 
         final long detectorStartMs = SystemClock.elapsedRealtime();
         Task<List<com.google.mlkit.vision.barcode.Barcode>> task = barcodeScanner.process(inputImage);
+        Bitmap finalBitmap = bitmap;
         task.addOnSuccessListener((List<com.google.mlkit.vision.barcode.Barcode> barcodes) -> {
             if (barcodes.isEmpty()) {
                 //Log.v(TAG, "No barcode has been detected");
@@ -514,42 +573,47 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
 
                 String val = barcode.getRawValue();
                 Log.v(TAG, "Scanned Barcode: " +val);
-                if(val.length() < 17) {
-                    continue;
-                }
-                val = val.replaceAll("[ioqIOQ]", "");
 
-                val = val.substring(0, Math.min(val.length(), 17));
+                if (DetectionTypes == 0) {
+                    if(val.length() < 17) {
+                        continue;
+                    }
+                    val = val.replaceAll("[ioqIOQ]", "");
 
-                if(validateVin(val)) {
-                    Log.v(TAG, "Detected VIN: " +val);
+                    val = val.substring(0, Math.min(val.length(), 17));
+
+                    if(validateVin(val)) {
+                        Log.v(TAG, "Detected VIN: " +val);
+                        Intent data = new Intent();
+                        data.putExtra("barcodeType", barcode.getValueType());
+                        data.putExtra("barcodeValue", val);
+                        setResult(CommonStatusCodes.SUCCESS, data);
+                        finish();
+                    }
+                } else {
+                    Log.v(TAG, "Detected Barcode: " +val);
                     Intent data = new Intent();
                     data.putExtra("barcodeType", barcode.getValueType());
                     data.putExtra("barcodeValue", val);
                     setResult(CommonStatusCodes.SUCCESS, data);
                     finish();
                 }
-
-
             }
 
             processBarcodeFrames ++;
 
-//            long endMs = SystemClock.elapsedRealtime();
-//            long currentFrameLatencyMs = endMs - frameStartMs;
-//            long currentDetectorLatencyMs = endMs - detectorStartMs;
-//            Log.d(TAG, "Frame latency:" + currentFrameLatencyMs);
-//            Log.d(TAG, "Detector latency:" + currentDetectorLatencyMs);
-            if (DetectionTypes == 0 && processBarcodeFrames > 3) {
+            if (DetectionTypes == 0) {
                 InputImage textInputImage;
+                // Resizing for OCR detection because we don't need the max resolution.
+                Bitmap resizedBitmap = getResizedBitmap(finalBitmap, 500);
                 if (lastTextCheck == 0) {
                     lastTextCheck = 1;
-                    textInputImage = InputImage.fromBitmap(bitmap, 180);
+                    textInputImage = InputImage.fromBitmap(resizedBitmap, 180);
                 } else {
-                    textInputImage = InputImage.fromBitmap(bitmap, 0);
+                    textInputImage = InputImage.fromBitmap(resizedBitmap, 0);
                     lastTextCheck = 0;
                 }
-                processBarcodeFrames = 0;
+                //processBarcodeFrames = 0;
                 Task<Text> textTask = textRecognizer.process(textInputImage);
                 textTask.addOnSuccessListener((Text text) -> {
                     if (!text.getText().equals("")) {
@@ -558,7 +622,7 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
                             Text.TextBlock textBlock = textBlocks.get(i);
 
                             String val = textBlock.getText();
-                            // Match vins that have the correct pattern, must be: 1. 17 digits long, 2. have 0-9 or X in the 9th digit, 3. have the last 6 digits be numbers
+                            // Match vins that have the correct pattern, must be: 1. 17 digits long, 2. have 0-9 or X in the 9th digit, 3. characters 1-8 and 10-12 must be an allowed character, 4. last 4 digits must be numbers
                             Pattern p = Pattern.compile("([ABCDEFGHJKLMNPRSTUVWXYZ0-9]{8}[0-9X]{1}[ABCDEFGHJKLMNPRSTUVWXYZ0-9]{3}[0-9]{5})");
                             Matcher m = p.matcher(val);
                             while (m.find()) {
@@ -574,6 +638,11 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
                             }
                         }
                     }
+                    long endMs = SystemClock.elapsedRealtime();
+                    long currentFrameLatencyMs = endMs - frameStartMs;
+                    long currentDetectorLatencyMs = endMs - detectorStartMs;
+//                    Log.d(TAG, "Frame latency w/ OCR:" + currentFrameLatencyMs);
+//                    Log.d(TAG, "Detector latency w/ OCR:" + currentDetectorLatencyMs);
                     detectionActive = false;
                     //Log.v(TAG, "Frame Processed");
                 }).addOnFailureListener((Exception e) -> {
@@ -581,6 +650,11 @@ public final class BarcodeCaptureActivity extends AppCompatActivity {
                     detectionActive = false;
                 });
             } else {
+                long endMs = SystemClock.elapsedRealtime();
+                long currentFrameLatencyMs = endMs - frameStartMs;
+                long currentDetectorLatencyMs = endMs - detectorStartMs;
+//                Log.d(TAG, "Frame latency:" + currentFrameLatencyMs);
+//                Log.d(TAG, "Detector latency:" + currentDetectorLatencyMs);
                 detectionActive = false;
             }
         }).addOnFailureListener((Exception e) -> {

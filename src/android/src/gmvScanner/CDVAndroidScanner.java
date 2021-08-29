@@ -56,7 +56,8 @@ public class CDVAndroidScanner extends CordovaPlugin {
 		Intent intent = new Intent(context, SecondaryActivity.class);
         intent.putExtra("DetectionTypes", args.optInt(0, 1234));
         intent.putExtra("ViewFinderWidth", args.optDouble(1, .5));
-        intent.putExtra("ViewFinderHeight", args.optDouble(1, .7));
+        intent.putExtra("ViewFinderHeight", args.optDouble(2, .7));
+        intent.putExtra("ViewFinderZoom", (float) args.optDouble(3, 1.0));
 
         this.cordova.setActivityResultCallback(this);
         this.cordova.startActivityForResult(this, intent, RC_BARCODE_CAPTURE);
@@ -97,19 +98,4 @@ public class CDVAndroidScanner extends CordovaPlugin {
     public void onRestoreStateForActivityResult(Bundle state, CallbackContext callbackContext) {
         mCallbackContext = callbackContext;
     }
-    
-/*
-    private void startScan(CallbackContext callbackContext) {
-		Intent intent = new Intent(this, MainActivity.class);
-		//intent.putExtra(BarcodeCaptureActivity.AutoFocus, autoFocus.isChecked());
-		//intent.putExtra(BarcodeCaptureActivity.UseFlash, useFlash.isChecked());
-
-		startActivityForResult(intent, RC_BARCODE_CAPTURE);
-
-        if (true) {
-			callbackContext.success("Test response!!!!");
-        } else {
-            callbackContext.error("Expected one non-empty string argument.");
-        }
-    }*/
 }

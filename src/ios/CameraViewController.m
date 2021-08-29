@@ -29,6 +29,8 @@
 @property(nonatomic, strong) UIImageView *imageView;
 
 @property(nonatomic, strong) AVCaptureSession *session;
+@property(nonatomic, strong) AVCaptureDevice *captureDevice;
+
 @property(nonatomic, strong) AVCaptureVideoDataOutput *videoDataOutput;
 @property(nonatomic, strong) dispatch_queue_t videoDataOutputQueue;
 @property(nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
@@ -92,7 +94,6 @@ static CIContext *gCIContext;
     // Set up camera preview.
     [self setUpCameraPreview];
 
-
     //Parse Cordova settings.
     MLKBarcodeFormat *formats = 0;
     //If barcodeFormats == 0 then process as a VIN with VIN verifications.
@@ -150,6 +151,11 @@ static CIContext *gCIContext;
 - (void)captureOutput:(AVCaptureOutput *)captureOutput
 didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
        fromConnection:(AVCaptureConnection *)connection {
+
+    [self.captureDevice lockForConfiguration:nil];
+    [self.captureDevice setVideoZoomFactor:MIN(self.captureDevice.activeFormat.videoMaxZoomFactor, _scanAreaZoom)];
+    [self.captureDevice unlockForConfiguration];
+
     UIImage *image = [self imageFromSampleBuffer:sampleBuffer];
 
     //We're going to crop UIImage to the onscreen viewfinder's box size for faster processing.
@@ -501,16 +507,29 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 }
 
 - (void)setUpCameraPreview {
+    [self.session beginConfiguration];
+    self.captureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+
+    [self.captureDevice lockForConfiguration:nil];
+    [self.captureDevice setVideoZoomFactor:MIN(self.captureDevice.activeFormat.videoMaxZoomFactor, _scanAreaZoom)];
+    [self.captureDevice unlockForConfiguration];
+
+    AVCaptureDeviceInput *deviceInput = [AVCaptureDeviceInput deviceInputWithDevice:self.captureDevice error:nil];
+
+    [self.session addInput:deviceInput];
+    [self.session commitConfiguration];
+
     self.previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:self.session];
     [self.previewLayer setBackgroundColor:[UIColor blackColor].CGColor];
     [self.previewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
 
     self.previewLayer.frame = self.view.superview.bounds;
-    [self.view.layer addSublayer:self.previewLayer];
 
     CGRect screenRect = [[UIScreen mainScreen] bounds];
     CGFloat screenWidth = screenRect.size.width;
     CGFloat screenHeight = screenRect.size.height;
+
+    [self.view.layer addSublayer:self.previewLayer];
 
     CGFloat frameWidth = screenWidth*_scanAreaWidth;
     CGFloat frameHeight = screenHeight*_scanAreaHeight;
@@ -551,9 +570,6 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     _cancelButton.contentEdgeInsets = UIEdgeInsetsMake(15, 15, 15, 15);
 
     [self.view addSubview:_cancelButton];
-
-
-
 
     self.torchButton = [[UIButton alloc] init];
     [self.torchButton addTarget:self
@@ -663,13 +679,10 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 
 - (UIImage *)croppIngimageByImageName:(UIImage *)imageToCrop toRect:(CGRect)rect
 {
-    //CGRect CropRect = CGRectMake(rect.origin.x, rect.origin.y, rect.size.width, rect.size.height+15);
-
-    
     CGImageRef imageRef = CGImageCreateWithImageInRect([imageToCrop CGImage], rect);
     UIImage *cropped = [UIImage imageWithCGImage:imageRef];
     CGImageRelease(imageRef);
-    
+
     return cropped;
 }
 
@@ -680,7 +693,7 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     if (captureDeviceClass != nil) {
         AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
         if ([device hasTorch] && [device hasFlash]){
-            
+
             [device lockForConfiguration:nil];
             if (device.torchMode == AVCaptureTorchModeOff)
             {
@@ -701,23 +714,25 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     } }
 
 - (void) closeView :(id)sender{
-    
+
     [ self cleanupCaptureSession];
-    
+
     [_session stopRunning];
-    
+
     [delegate closeScanner];
 }
 
 
 - (void)updateCameraSelection {
+    return;
     [self.session beginConfiguration];
-    
+
     // Remove old inputs
     NSArray *oldInputs = [self.session inputs];
     for (AVCaptureInput *oldInput in oldInputs) {
         [self.session removeInput:oldInput];
     }
+
     
     AVCaptureDevicePosition desiredPosition = AVCaptureDevicePositionBack;
     AVCaptureDeviceInput *input = [self captureDeviceInputForPosition:desiredPosition];

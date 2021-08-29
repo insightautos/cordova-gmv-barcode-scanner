@@ -138,7 +138,6 @@ public class CameraSource {
 
     /**
      * Rotation of the device, and thus the associated preview images captured from the device.
-     * See {@link Frame.Metadata#getRotation()}.
      */
     private int mRotation;
 
@@ -146,13 +145,14 @@ public class CameraSource {
 
     // These values may be requested by the caller.  Due to hardware limitations, we may need to
     // select close, but not exactly the same values for these.
-    private float mRequestedFps = 15.0f;
+    private float mRequestedFps = 30.0f;
     private int mRequestedPreviewWidth = 1024;
     private int mRequestedPreviewHeight = 768;
     private CameraSourcePreview mPreview;
 
     public double ViewFinderWidth = .5;
     public double ViewFinderHeight = .7;
+    public float ViewFinderZoom = 1.0f;
 
     private String mFocusMode = null;
     private String mFlashMode = null;
@@ -373,6 +373,10 @@ public class CameraSource {
             mProcessingThread = new Thread(mFrameProcessor);
             mFrameProcessor.setActive(true);
             mProcessingThread.start();
+
+            mPreview.invalidate();
+            mPreview.requestLayout();
+            doZoom(ViewFinderZoom);
         }
         return this;
     }
@@ -398,6 +402,10 @@ public class CameraSource {
             mProcessingThread = new Thread(mFrameProcessor);
             mFrameProcessor.setActive(true);
             mProcessingThread.start();
+
+            mPreview.invalidate();
+            mPreview.requestLayout();
+            doZoom(ViewFinderZoom);
         }
         return this;
     }
@@ -829,6 +837,7 @@ public class CameraSource {
         camera.addCallbackBuffer(createPreviewBuffer(mPreviewSize));
         camera.addCallbackBuffer(createPreviewBuffer(mPreviewSize));
 
+        Log.i(TAG, "Camera Size. Width: " + mPreviewSize.getWidth() + " Height: " + mPreviewSize.getHeight());
         return camera;
     }
 
@@ -1213,7 +1222,7 @@ public class CameraSource {
                         return;
                     }
 
-//                    Log.d(TAG, "Image Crop Parameters " + mPreview.cropParameters[0] +" - " + mPreview.cropParameters[1] +" - " + mPreview.cropParameters[2] +" - " + mPreview.cropParameters[3] +" - " + bmpout.getHeight() +" - " +  bmpout.getWidth());
+                    Log.d(TAG, "Image Crop Parameters " + mPreview.cropParameters[0] +" - " + mPreview.cropParameters[1] +" - " + mPreview.cropParameters[2] +" - " + mPreview.cropParameters[3] +" - " + bmpout.getHeight() +" - " +  bmpout.getWidth());
 
                     aIn.copyFrom(mPendingFrameDataBytes);
                     yubToRgbIntrinsic.forEach(aOut);

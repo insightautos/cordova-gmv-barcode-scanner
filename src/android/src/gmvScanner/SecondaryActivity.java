@@ -54,6 +54,7 @@ public class SecondaryActivity extends Activity implements View.OnClickListener 
         intent.putExtra("DetectionTypes", getIntent().getIntExtra("DetectionTypes", 1234));
         intent.putExtra("ViewFinderWidth", getIntent().getDoubleExtra("ViewFinderWidth", .5));
         intent.putExtra("ViewFinderHeight", getIntent().getDoubleExtra("ViewFinderHeight", .7));
+        intent.putExtra("ViewFinderZoom", getIntent().getFloatExtra("ViewFinderZoom", 1.0f));
 
         startActivityForResult(intent, RC_BARCODE_CAPTURE);
 

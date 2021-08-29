@@ -105,7 +105,8 @@ var options = {
 	},
 	detectorSize: {
 		width: .5,
-		height: .7
+		height: .7,
+        zoom: 1.0
 	}
 }
 ````

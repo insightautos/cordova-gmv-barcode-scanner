@@ -43,6 +43,7 @@
 @property(nonatomic,assign) NSNumber *barcodeFormats;
 @property(nonatomic,assign) CGFloat scanAreaWidth;
 @property(nonatomic,assign) CGFloat scanAreaHeight;
+@property(nonatomic,assign) CGFloat scanAreaZoom;
 
 @end
 
