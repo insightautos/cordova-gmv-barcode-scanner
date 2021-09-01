@@ -1228,7 +1228,7 @@ public class CameraSource {
                     yubToRgbIntrinsic.forEach(aOut);
                     aOut.copyTo(bmpout);
 
-                    croppedBmp = Bitmap.createBitmap(bmpout, mPreview.cropParameters[1], mPreview.cropParameters[0]*2, mPreview.cropParameters[3], mPreview.cropParameters[2]);
+                    croppedBmp = Bitmap.createBitmap(bmpout, (bmpout.getWidth()-mPreview.cropParameters[3])/2, (bmpout.getHeight()-mPreview.cropParameters[2])/2, mPreview.cropParameters[3], mPreview.cropParameters[2]);
 
                     data = mPendingFrameData;
                     mPendingFrameData = null;

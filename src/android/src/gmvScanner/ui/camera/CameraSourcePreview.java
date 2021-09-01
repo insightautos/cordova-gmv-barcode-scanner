@@ -218,9 +218,12 @@ public class CameraSourcePreview extends ViewGroup {
         Log.d(TAG, "Camera Source Preview Inputs " + left +" - " + top +" - " + right +" - " + bottom);
         Log.d(TAG, "Camera Source Preview Sizes " + width +" - " + height +" - " + layoutWidth +" - " + layoutHeight);
         Log.d(TAG, "Camera Source Preview Child " + childWidth +" - " + childHeight +" - " + leftOffset +" - " + topOffset);
+        Log.d(TAG, "Camera Source Preview Ratio " + ratio);
 
-        //mSurfaceView.layout(leftOffset, topOffset, childWidth, childHeight);
-        mSurfaceView.layout(leftOffset/2, topOffset/2, childWidth + leftOffset/2, childHeight + topOffset/2);
+        mSurfaceView.layout(0, 0, childWidth, childHeight);
+
+        mSurfaceView.setTranslationX((int) (-1*(width*ratio - layoutWidth)/2));
+        mSurfaceView.setTranslationY((int) (-1*(height*ratio - layoutHeight)/2));
 
         int actualWidth = (int) (layoutWidth*ViewFinderWidth);
         int actualHeight = (int) (layoutHeight*ViewFinderHeight);
