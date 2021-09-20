@@ -10,7 +10,7 @@ Dependency | Version | Info
 ---------- | ------- | --------
 `cordova-android` | `>=8.0.0`
 `cordova-ios` | `>=4.5.0`
-`cordova-plugin-androidx` | ` ^3.0.0` | If cordova-android <= 9.0.0
+`cordova-plugin-androidx` | ` ^3.0.0` | If cordova-android < 9.0.0
 `cordova-plugin-androidx-adapter` | ` ^1.1.3`
 
 ## Prerequisites
