@@ -1,6 +1,6 @@
-export type Settings = (string | number | boolean | undefined)[];
+export type ISettings = (string | number | boolean | undefined)[];
 
-export interface BarcodeTypes {
+export interface IBarcodeTypes {
   Aztec: boolean;
   CodaBar: boolean;
   Code39: boolean;
@@ -16,19 +16,19 @@ export interface BarcodeTypes {
   UPCE: boolean;
 }
 
-export interface Options {
-  types: BarcodeTypes;
+export interface IOptions {
+  types: IBarcodeTypes;
   detectorSize: number;
   mirrorCamera?: boolean;
 }
 
-export interface Result {
+export interface IResult {
   text: string;
-  format: number;
-  type: number;
+  format: string;
+  type: string;
 }
 
-export interface Error {
+export interface IError {
   cancelled: boolean;
   message: string;
 }

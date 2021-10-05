@@ -1,18 +1,16 @@
 {
-  "extends": "./node_modules/mobisys-ts-config/tsconfig.json",
-  "include": ["src/*.ts"],
+  "extends": "@teckel.ts-internal/ts-config/tsconfig.json",
+  "include": [
+    "./**/.eslintrc.js",
+    "./rollup.config.js",
+    "./src-typescript/**/*.ts",
+    "./types/**/*.ts"
+  ],
+  "exclude": ["./test/"],
   "compilerOptions": {
-    "moduleResolution": "node",
-    "module": "esNext",
-    "target": "ES5",
-    "lib": ["dom", "es2017"],
+    "module": "ES2015",
     "outDir": "www",
-    "declaration": true,
-    "declarationDir": "./types",
-    "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
-    "noEmitOnError": true,
-    "removeComments": true,
-    "newLine": "lf"
+    "skipLibCheck": true,
+    "types": ["@types/cordova", "@types/node"]
   }
 }

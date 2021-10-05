@@ -11,7 +11,7 @@ export const detectorFormat = Object.freeze({
   UPCA: 512,
   UPCE: 1024,
   PDF417: 2048,
-  Aztec: 4096
+  Aztec: 4096,
 });
 
 export const detectorType = Object.freeze({
@@ -26,5 +26,5 @@ export const detectorType = Object.freeze({
   WIFI: 9,
   GEO: 10,
   CALENDAR_EVENT: 11,
-  DRIVER_LICENSE: 12
+  DRIVER_LICENSE: 12,
 });

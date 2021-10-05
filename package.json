@@ -16,26 +16,43 @@
   ],
   "author": "Florian Biebel",
   "license": "MIT",
-  "main": "www/main.js",
-  "scripts": {
-    "build": "tsc --project tsconfig.json",
-    "prepublishOnly": "npm run build",
-    "test": "tslint --project tsconfig.json"
+  "main": "www/BarcodeScanner.js",
+  "prettier": "@teckel.ts-internal/prettier-config",
+  "engines": {
+    "node": ">=10.0.0"
   },
+  "scripts": {
+    "build": "npm run lint && npm run clean && npm run transpile",
+    "clean": "mkdir -p 'www' && find 'www' ! -path 'www' -delete",
+    "lint": "eslint . --ext .js,.ts --cache && tsc -p tsconfig.lint.json",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "transpile": "rollup --config --silent",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "/src/",
+    "/www/**/*.{js,js.map,d.ts}",
+    "/plugin.xml"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner.git"
   },
   "homepage": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner#readme",
-  "types": "./types/main.d.ts",
+  "types": "./www/BarcodeScanner.d.ts",
   "publishConfig": {
     "registry": "https://pkgs.dev.azure.com/mobisysgmbh/_packaging/mobisys/npm/registry/"
   },
   "devDependencies": {
-    "@types/cordova": "^0.0.34",
-    "mobisys-ts-config": "^3.0.0",
-    "prettier": "^2.2.0",
-    "tslint": "^5.16.0",
-    "typescript": "^3.9.7"
+    "@rollup/plugin-commonjs": "20.0.0",
+    "@rollup/plugin-node-resolve": "13.0.4",
+    "@teckel.ts-internal/eslint-config": "1.1.0",
+    "@teckel.ts-internal/prettier-config": "1.0.0",
+    "@teckel.ts-internal/ts-config": "2.0.1",
+    "@types/cordova": "0.0.34",
+    "@types/node": "16.7.1",
+    "rollup": "2.56.3",
+    "rollup-plugin-typescript2": "0.30.0",
+    "tslib": "2.3.1"
   }
 }

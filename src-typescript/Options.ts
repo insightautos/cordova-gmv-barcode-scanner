@@ -12,7 +12,7 @@ export const defaultOptions = Object.freeze({
     UPCA: true,
     UPCE: true,
     PDF417: true,
-    Aztec: true
+    Aztec: true,
   },
-  detectorSize: 0.6
+  detectorSize: 0.6,
 });
