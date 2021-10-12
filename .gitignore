@@ -16,3 +16,6 @@ gradlew*
 
 # Build directory
 www/
+
+# Other files
+.eslintcache

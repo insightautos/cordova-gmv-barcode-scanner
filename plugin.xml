@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <plugin id="cordova-plugin-mlkit-barcode-scanner"
-  version="2.1.2"
+  version="2.1.3"
   xmlns="http://apache.org/cordova/ns/plugins/1.0"
   xmlns:android="http://schemas.android.com/apk/res/android">
   <name>cordova-plugin-mlkit-barcode-scanner</name>
   <js-module name="cordova-plugin-ml-kit-barcode-scanner"
     src="www/BarcodeScanner.js">
-    <clobbers target="cordova.plugins.mlkit" />
+    <clobbers target="cordova.plugins.mlkit.barcodeScanner" />
   </js-module>
 
   <engines>

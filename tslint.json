@@ -1,6 +1,0 @@
-{
-  "extends": "mobisys-ts-config/tslint.json",
-  "linterOptions": {
-    "exclude": ["node_modules/**"]
-  }
-}

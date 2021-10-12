@@ -2,20 +2,24 @@ import { detectorFormat, detectorType } from './Detector';
 import { IError, IOptions, IResult, ISettings } from './Interface';
 import { defaultOptions } from './Options';
 
-class MLKitBarcodeScanner {
+function getValues<TObject>(obj: { [s: string]: TObject }): TObject[] {
+  return Object.keys(obj).map((key) => obj[key] as TObject);
+}
+
+export class MLKitBarcodeScanner {
   private options: IOptions = {
     ...defaultOptions,
   };
 
   private getBarcodeFormat(format: number): string {
-    Object.values(detectorFormat).indexOf(format);
-    const index = Object.values(detectorFormat).indexOf(format);
+    getValues(detectorFormat).indexOf(format);
+    const index = getValues(detectorFormat).indexOf(format);
     return Object.keys(detectorFormat)[index] || format.toString();
   }
 
   private getBarcodeType(type: number): string {
-    Object.values(detectorType).indexOf(type);
-    const index = Object.values(detectorType).indexOf(type);
+    getValues(detectorType).indexOf(type);
+    const index = getValues(detectorType).indexOf(type);
     return Object.keys(detectorType)[index] || type.toString();
   }
 
@@ -46,11 +50,11 @@ class MLKitBarcodeScanner {
       mirrorCamera: this.options.mirrorCamera,
     };
     const settings: ISettings = [];
-    for (const [key, value] of Object.entries(args)) {
-      if (args.hasOwnProperty(key)) {
-        settings.push(value);
-      }
+
+    for (const value of getValues(args)) {
+      settings.push(value);
     }
+
     return settings;
   }
 
@@ -110,4 +114,5 @@ class MLKitBarcodeScanner {
   }
 }
 
-export const barcodeScanner = new MLKitBarcodeScanner();
+const barcodeScanner = new MLKitBarcodeScanner();
+module.exports = barcodeScanner;

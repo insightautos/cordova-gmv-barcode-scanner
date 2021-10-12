@@ -15,4 +15,5 @@ export const defaultOptions = Object.freeze({
     Aztec: true,
   },
   detectorSize: 0.6,
+  mirrorCamera: false,
 });

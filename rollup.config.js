@@ -4,7 +4,10 @@ import typescript from 'rollup-plugin-typescript2';
 
 /** @type {import('rollup').RollupOptions} */
 const options = {
-  input: ['./src-typescript/BarcodeScanner.ts'],
+  input: [
+    './src-typescript/BarcodeScanner.contract.ts',
+    './src-typescript/BarcodeScanner.plugin.ts',
+  ],
   output: {
     dir: './www/',
     format: 'cjs',
