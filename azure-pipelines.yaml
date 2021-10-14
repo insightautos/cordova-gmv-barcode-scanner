@@ -21,6 +21,9 @@ stages:
             displayName: Set Node version to 14
             inputs:
               versionSpec: '14.x'
+          - script: |
+              npm install -g npm@7
+            displayName: 'Installing npm modules'
           - task: npmAuthenticate@0
             displayName: Setup authentication for AzureDevOps npm feed
             inputs:
