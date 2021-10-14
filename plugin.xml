@@ -5,7 +5,7 @@
   xmlns:android="http://schemas.android.com/apk/res/android">
   <name>cordova-plugin-mlkit-barcode-scanner</name>
   <js-module name="cordova-plugin-ml-kit-barcode-scanner"
-    src="www/BarcodeScanner.js">
+    src="www/BarcodeScanner.plugin.js">
     <clobbers target="cordova.plugins.mlkit.barcodeScanner" />
   </js-module>
 
