@@ -18,6 +18,7 @@ stages:
         condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
         steps:
           - task: NodeTool@0
+            displayName: Set Node version to 14
             inputs:
               versionSpec: '14.x'
           - task: npmAuthenticate@0

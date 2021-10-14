@@ -51,6 +51,7 @@
     "@teckel.ts-internal/ts-config": "2.0.1",
     "@types/cordova": "0.0.34",
     "@types/node": "16.7.1",
+    "eslint": "7.32.0",
     "rollup": "2.56.3",
     "rollup-plugin-typescript2": "0.30.0",
     "tslib": "2.3.1"
