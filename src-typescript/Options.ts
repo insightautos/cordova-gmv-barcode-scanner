@@ -1,4 +1,6 @@
-export const defaultOptions = Object.freeze({
+import { IOptions } from './Interface';
+
+export const defaultOptions: Required<IOptions> = Object.freeze({
   types: {
     Code128: true,
     Code39: true,
