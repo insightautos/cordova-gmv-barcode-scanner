@@ -8,3 +8,6 @@ declare global {
     };
   }
 }
+
+export { MLKitBarcodeScanner } from './BarcodeScanner.plugin';
+export { IBarcodeTypes, IError, IOptions, IResult } from './Interface';

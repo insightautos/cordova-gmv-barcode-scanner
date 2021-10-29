@@ -16,7 +16,7 @@
   ],
   "author": "Florian Biebel",
   "license": "MIT",
-  "main": "www/BarcodeScanner.plugin.js",
+  "main": "www/BarcodeScanner.contract.js",
   "prettier": "@teckel.ts-internal/prettier-config",
   "engines": {
     "node": ">=10.0.0"
@@ -39,7 +39,6 @@
     "url": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner.git"
   },
   "homepage": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner#readme",
-  "types": "./www/BarcodeScanner.contract.d.ts",
   "publishConfig": {
     "registry": "https://pkgs.dev.azure.com/mobisysgmbh/_packaging/mobisys/npm/registry/"
   },
