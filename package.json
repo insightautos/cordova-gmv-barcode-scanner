@@ -46,7 +46,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "20.0.0",
     "@rollup/plugin-node-resolve": "13.0.4",
-    "@teckel.ts-internal/eslint-config": "2.0.1",
+    "@teckel.ts-internal/eslint-config": "3.0.0",
     "@teckel.ts-internal/prettier-config": "1.0.0",
     "@teckel.ts-internal/ts-config": "2.0.1",
     "@types/cordova": "0.0.34",
