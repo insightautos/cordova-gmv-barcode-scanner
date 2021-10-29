@@ -15,7 +15,7 @@ Dependency | Version | Info
 
 ## Prerequisites
 
-If your cordova-android version is below 9.0.0, you have to install `cordova-plugin-androidx` first beforce installing this plugin. Execute this command in your terminal:
+If your cordova-android version is below 9.0.0, you have to install `cordova-plugin-androidx` first before installing this plugin. Execute this command in your terminal:
 ```bash
 cordova plugin add cordova-plugin-androidx
 ```
