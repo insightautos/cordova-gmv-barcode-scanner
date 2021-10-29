@@ -2,7 +2,8 @@
 
 ## Purpose of this Project
 
-The purpose of this project is to provide a barcode scanner utilizing the Google ML Kit Vision library for the Cordova framework on iOS and Android. The MLKit library is incredibly performant and fast in comparison to any other barcode reader that I have used that are free.
+The purpose of this project is to provide a barcode scanner utilizing the Google ML Kit Vision library for the Cordova framework on iOS and Android.
+The MLKit library is incredibly performant and fast in comparison to any other barcode reader that I have used that are free.
 
 ## Plugin Dependencies
 
@@ -15,18 +16,19 @@ The purpose of this project is to provide a barcode scanner utilizing the Google
 
 ## Prerequisites
 
-If your cordova-android version is below 9.0.0, you have to install `cordova-plugin-androidx` first before installing this plugin. Execute this command in your terminal:
+If your `cordova-android` version is below `9.0.0`, you have to install `cordova-plugin-androidx` first before installing this plugin.
+Execute this command in your terminal:
 
 ```bash
-cordova plugin add cordova-plugin-androidx
+npx cordova plugin add cordova-plugin-androidx
 ```
 
 ## Installation
 
-Run this command in your project root.
+Run this command in your project root:
 
 ```bash
-cordova plugin add cordova-plugin-mlkit-barcode-scanner
+npx cordova plugin add cordova-plugin-mlkit-barcode-scanner
 ```
 
 ## Supported Platforms
@@ -84,7 +86,11 @@ cordova.plugins.mlkit.barcodeScanner.scan(options, (error, result) => {
 
 ### Plugin Options
 
-The default options are shown below. Note that the `detectorSize` value must be a float. If the values are greater than 1 then they will not be visible on the screen. Use them as decimal percentages to determine how large you want the scan area to be. All values are optional.
+The default options are shown below.
+All values are optional.
+
+Note that the `detectorSize` value must be between `0` and `1`, because it determines how many percent of the screen should be covered by the detector.
+If the value is greater than 1 the detector will not be visible on the screen.
 
 ```javascript
 const defaultOptions = {
@@ -112,46 +118,45 @@ const defaultOptions = {
 
 ```javascript
 result: {
-  cancelled: boolean;
   text: string;
-  format: string | undefined;
-  type: string | undefined;
+  format: string;
+  type: string;
 }
 ```
 
 ## Run the test app
 
-Install cordova
+Install cordova:
 
 ```
 npm i -g cordova
 ```
 
-Go to test app
+Go to test app:
 
 ```
 cd test/scan-test-app
 ```
 
-Install node modules
+Install node modules:
 
 ```
 npm i
 ```
 
-Prepare Cordova
+Prepare Cordova:
 
 ```
 cordova platform add android && cordova plugin add ../../ --link --force
 ```
 
-Build and run the project Android
+Build and run the project Android:
 
 ```
 cordova build android && cordova run android
 ```
 
-and iOS
+and iOS:
 
 ```
 cordova build ios && cordova run ios
@@ -159,9 +164,12 @@ cordova build ios && cordova run ios
 
 ## Known Issues
 
-Under unknown circumstances, an error may occur where the camera is upside down.
-Here is a list of devices that have this problem:
+On some devices the camera may be upside down.
+
+Here is a list of devices with this problem:
 
 - Zebra MC330K (Manufacturer: Zebra Technologies, Model: MC33)
 
-Current Solution: When your device have this problem, you can call the plugin with the option "mirrorCamera" and set its value to true. This will rotate the camera stream by 180 degrees.
+Current Solution:
+if your device has this problem, you can call the plugin with the option `mirrorCamera` set to `true`.
+This will rotate the camera stream by 180 degrees.
