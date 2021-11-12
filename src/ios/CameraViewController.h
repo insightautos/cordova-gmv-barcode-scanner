@@ -30,7 +30,7 @@
 
 @property(nonatomic,assign)id delegate;
 @property(nonatomic,assign) NSNumber *barcodeFormats;
-@property(nonatomic,assign) CGFloat scanAreaSize;
+@property(nonatomic,assign) CGFloat detectorSize;
 
 @end
 

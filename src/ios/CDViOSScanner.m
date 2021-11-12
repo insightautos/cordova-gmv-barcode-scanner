@@ -47,13 +47,13 @@
             //Provide settings to the camera view.
             NSNumberFormatter* f = [[NSNumberFormatter alloc] init];
             f.numberStyle = NSNumberFormatterDecimalStyle;
-            NSNumber* barcodeFormats = [command argumentAtIndex:0 withDefault:@1234];
-            self.cameraViewController.scanAreaSize = (CGFloat)[[command argumentAtIndex:1 withDefault:@.5] floatValue];
-            // index 2 is currently reserved for mirrorCamera on Android
+            NSDictionary* config = [command.arguments objectAtIndex:0];
+            NSNumber* barcodeFormats = [config valueForKey:@"barcodeFormats"] ?: @1234;
             self.cameraViewController.barcodeFormats = barcodeFormats;
+            self.cameraViewController.detectorSize = (CGFloat)[[config valueForKey:@"detectorSize"] ?: @0.5 floatValue];
             self.cameraViewController.modalPresentationStyle = UIModalPresentationFullScreen;
 
-            NSLog(@"scanAreaSize: %f, barcodeFormats: %@", self.cameraViewController.scanAreaSize, self.cameraViewController.barcodeFormats);
+            NSLog(@"scanAreaSize: %f, barcodeFormats: %@", self.cameraViewController.detectorSize, self.cameraViewController.barcodeFormats);
 
             [self.viewController presentViewController:self.cameraViewController animated: NO completion:nil];
             self->_callback = command.callbackId;

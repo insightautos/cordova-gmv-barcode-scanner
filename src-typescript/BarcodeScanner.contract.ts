@@ -10,4 +10,4 @@ declare global {
 }
 
 export { MLKitBarcodeScanner } from './BarcodeScanner.plugin';
-export { IBarcodeTypes, IError, IOptions, IResult } from './Interface';
+export { IBarcodeFormats, IError, IOptions, IResult } from './Interface';

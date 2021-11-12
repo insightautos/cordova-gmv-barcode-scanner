@@ -1,6 +1,4 @@
-export type ISettings = (string | number | boolean | undefined)[];
-
-export interface IBarcodeTypes {
+export interface IBarcodeFormats {
   Aztec: boolean;
   CodaBar: boolean;
   Code39: boolean;
@@ -17,9 +15,15 @@ export interface IBarcodeTypes {
 }
 
 export interface IOptions {
-  types: IBarcodeTypes;
+  barcodeFormats?: IBarcodeFormats;
+  detectorSize?: number;
+  rotateCamera?: boolean;
+}
+
+export interface IConfig {
+  barcodeFormats: number;
   detectorSize: number;
-  mirrorCamera?: boolean;
+  rotateCamera?: boolean;
 }
 
 export interface IResult {

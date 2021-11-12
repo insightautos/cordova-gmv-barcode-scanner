@@ -185,10 +185,10 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     
     //Figure out which ratio is bigger and then subtract a value off the frame width in case some of the camera preview is hanging off screen.
     if(imageWidth/screenWidth < imageHeight/screenHeight){
-        actualFrameWidth = imageWidth * _scanAreaSize;
+        actualFrameWidth = imageWidth * _detectorSize;
         actualFrameHeight = actualFrameWidth;
     } else {
-        actualFrameHeight = imageHeight * _scanAreaSize;
+        actualFrameHeight = imageHeight * _detectorSize;
         actualFrameWidth = actualFrameHeight;
     }
 
@@ -265,7 +265,7 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
     CGFloat screenWidth = screenRect.size.width;
     CGFloat screenHeight = screenRect.size.height;
 
-    CGFloat frameWidth = screenWidth*_scanAreaSize;
+    CGFloat frameWidth = screenWidth*_detectorSize;
     CGFloat frameHeight = frameWidth;
 
     UILabel* _label1 = [[UILabel alloc] init];

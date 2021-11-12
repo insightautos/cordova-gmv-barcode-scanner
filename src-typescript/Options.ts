@@ -1,7 +1,7 @@
 import { IOptions } from './Interface';
 
 export const defaultOptions: Required<IOptions> = Object.freeze({
-  types: {
+  barcodeFormats: {
     Code128: true,
     Code39: true,
     Code93: true,
@@ -17,5 +17,5 @@ export const defaultOptions: Required<IOptions> = Object.freeze({
     Aztec: true,
   },
   detectorSize: 0.6,
-  mirrorCamera: false,
+  rotateCamera: false,
 });

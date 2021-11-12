@@ -41,7 +41,6 @@ public class FrameMetadata {
     this.rotation = rotation;
   }
 
-
   public static class Builder {
 
     private int width;

@@ -94,7 +94,7 @@ If the value is greater than 1 the detector will not be visible on the screen.
 
 ```javascript
 const defaultOptions = {
-  types: {
+  barcodeFormats: {
     Code128: true,
     Code39: true,
     Code93: true,
@@ -110,7 +110,7 @@ const defaultOptions = {
     Aztec: true,
   },
   detectorSize: 0.6,
-  mirrorCamera: false,
+  rotateCamera: false,
 };
 ```
 
@@ -171,5 +171,5 @@ Here is a list of devices with this problem:
 - Zebra MC330K (Manufacturer: Zebra Technologies, Model: MC33)
 
 Current Solution:
-if your device has this problem, you can call the plugin with the option `mirrorCamera` set to `true`.
+if your device has this problem, you can call the plugin with the option `rotateCamera` set to `true`.
 This will rotate the camera stream by 180 degrees.

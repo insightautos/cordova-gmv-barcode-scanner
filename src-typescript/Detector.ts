@@ -1,4 +1,4 @@
-export const detectorFormat = Object.freeze({
+export const barcodeFormat = Object.freeze({
   Code128: 1,
   Code39: 2,
   Code93: 4,
@@ -14,7 +14,7 @@ export const detectorFormat = Object.freeze({
   Aztec: 4096,
 });
 
-export const detectorType = Object.freeze({
+export const barcodeType = Object.freeze({
   CONTACT_INFO: 1,
   EMAIL: 2,
   ISBN: 3,

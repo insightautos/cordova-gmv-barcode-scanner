@@ -53,9 +53,7 @@ public class BitmapUtils {
     byte[] imageInBuffer = new byte[data.limit()];
     data.get(imageInBuffer, 0, imageInBuffer.length);
     try {
-      YuvImage image =
-          new YuvImage(
-              imageInBuffer, ImageFormat.NV21, metadata.getWidth(), metadata.getHeight(), null);
+      YuvImage image = new YuvImage(imageInBuffer, ImageFormat.NV21, metadata.getWidth(), metadata.getHeight(), null);
       ByteArrayOutputStream stream = new ByteArrayOutputStream();
       image.compressToJpeg(new Rect(0, 0, metadata.getWidth(), metadata.getHeight()), 80, stream);
 
@@ -74,21 +72,15 @@ public class BitmapUtils {
   @Nullable
   @ExperimentalGetImage
   public static Bitmap getBitmap(ImageProxy image) {
-    FrameMetadata frameMetadata =
-        new FrameMetadata.Builder()
-            .setWidth(image.getWidth())
-            .setHeight(image.getHeight())
-            .setRotation(image.getImageInfo().getRotationDegrees())
-            .build();
+    FrameMetadata frameMetadata = new FrameMetadata.Builder().setWidth(image.getWidth()).setHeight(image.getHeight())
+        .setRotation(image.getImageInfo().getRotationDegrees()).build();
 
-    ByteBuffer nv21Buffer =
-        yuv420ThreePlanesToNV21(image.getImage().getPlanes(), image.getWidth(), image.getHeight());
+    ByteBuffer nv21Buffer = yuv420ThreePlanesToNV21(image.getImage().getPlanes(), image.getWidth(), image.getHeight());
     return getBitmap(nv21Buffer, frameMetadata);
   }
 
   /** Rotates a bitmap if it is converted from a bytebuffer. */
-  private static Bitmap rotateBitmap(
-          Bitmap bitmap, int rotationDegrees, boolean flipX, boolean flipY) {
+  private static Bitmap rotateBitmap(Bitmap bitmap, int rotationDegrees, boolean flipX, boolean flipY) {
     Matrix matrix = new Matrix();
 
     // Rotate the image back to straight.
@@ -96,8 +88,7 @@ public class BitmapUtils {
 
     // Mirror the image along the X or Y axis.
     matrix.postScale(flipX ? -1.0f : 1.0f, flipY ? -1.0f : 1.0f);
-    Bitmap rotatedBitmap =
-        Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+    Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
     // Recycle the old bitmap if it has changed.
     if (rotatedBitmap != bitmap) {
@@ -107,8 +98,7 @@ public class BitmapUtils {
   }
 
   @Nullable
-  public static Bitmap getBitmapFromContentUri(ContentResolver contentResolver, Uri imageUri)
-      throws IOException {
+  public static Bitmap getBitmapFromContentUri(ContentResolver contentResolver, Uri imageUri) throws IOException {
     Bitmap decodedBitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri);
     if (decodedBitmap == null) {
       return null;
@@ -118,36 +108,37 @@ public class BitmapUtils {
     int rotationDegrees = 0;
     boolean flipX = false;
     boolean flipY = false;
-    // See e.g. https://magnushoff.com/articles/jpeg-orientation/ for a detailed explanation on each
+    // See e.g. https://magnushoff.com/articles/jpeg-orientation/ for a detailed
+    // explanation on each
     // orientation.
     switch (orientation) {
-      case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
-        flipX = true;
-        break;
-      case ExifInterface.ORIENTATION_ROTATE_90:
-        rotationDegrees = 90;
-        break;
-      case ExifInterface.ORIENTATION_TRANSPOSE:
-        rotationDegrees = 90;
-        flipX = true;
-        break;
-      case ExifInterface.ORIENTATION_ROTATE_180:
-        rotationDegrees = 180;
-        break;
-      case ExifInterface.ORIENTATION_FLIP_VERTICAL:
-        flipY = true;
-        break;
-      case ExifInterface.ORIENTATION_ROTATE_270:
-        rotationDegrees = -90;
-        break;
-      case ExifInterface.ORIENTATION_TRANSVERSE:
-        rotationDegrees = -90;
-        flipX = true;
-        break;
-      case ExifInterface.ORIENTATION_UNDEFINED:
-      case ExifInterface.ORIENTATION_NORMAL:
-      default:
-        // No transformations necessary in this case.
+    case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+      flipX = true;
+      break;
+    case ExifInterface.ORIENTATION_ROTATE_90:
+      rotationDegrees = 90;
+      break;
+    case ExifInterface.ORIENTATION_TRANSPOSE:
+      rotationDegrees = 90;
+      flipX = true;
+      break;
+    case ExifInterface.ORIENTATION_ROTATE_180:
+      rotationDegrees = 180;
+      break;
+    case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+      flipY = true;
+      break;
+    case ExifInterface.ORIENTATION_ROTATE_270:
+      rotationDegrees = -90;
+      break;
+    case ExifInterface.ORIENTATION_TRANSVERSE:
+      rotationDegrees = -90;
+      flipX = true;
+      break;
+    case ExifInterface.ORIENTATION_UNDEFINED:
+    case ExifInterface.ORIENTATION_NORMAL:
+    default:
+      // No transformations necessary in this case.
     }
 
     return rotateBitmap(decodedBitmap, rotationDegrees, flipX, flipY);
@@ -180,23 +171,26 @@ public class BitmapUtils {
   /**
    * Converts YUV_420_888 to NV21 bytebuffer.
    *
-   * <p>The NV21 format consists of a single byte array containing the Y, U and V values. For an
-   * image of size S, the first S positions of the array contain all the Y values. The remaining
-   * positions contain interleaved V and U values. U and V are subsampled by a factor of 2 in both
-   * dimensions, so there are S/4 U values and S/4 V values. In summary, the NV21 array will contain
-   * S Y values followed by S/4 VU values: YYYYYYYYYYYYYY(...)YVUVUVUVU(...)VU
+   * <p>
+   * The NV21 format consists of a single byte array containing the Y, U and V
+   * values. For an image of size S, the first S positions of the array contain
+   * all the Y values. The remaining positions contain interleaved V and U values.
+   * U and V are subsampled by a factor of 2 in both dimensions, so there are S/4
+   * U values and S/4 V values. In summary, the NV21 array will contain S Y values
+   * followed by S/4 VU values: YYYYYYYYYYYYYY(...)YVUVUVUVU(...)VU
    *
-   * <p>YUV_420_888 is a generic format that can describe any YUV image where U and V are subsampled
-   * by a factor of 2 in both dimensions. {@link Image#getPlanes} returns an array with the Y, U and
-   * V planes. The Y plane is guaranteed not to be interleaved, so we can just copy its values into
-   * the first part of the NV21 array. The U and V planes may already have the representation in the
-   * NV21 format. This happens if the planes share the same buffer, the V buffer is one position
-   * before the U buffer and the planes have a pixelStride of 2. If this is case, we can just copy
-   * them to the NV21 array.
+   * <p>
+   * YUV_420_888 is a generic format that can describe any YUV image where U and V
+   * are subsampled by a factor of 2 in both dimensions. {@link Image#getPlanes}
+   * returns an array with the Y, U and V planes. The Y plane is guaranteed not to
+   * be interleaved, so we can just copy its values into the first part of the
+   * NV21 array. The U and V planes may already have the representation in the
+   * NV21 format. This happens if the planes share the same buffer, the V buffer
+   * is one position before the U buffer and the planes have a pixelStride of 2.
+   * If this is case, we can just copy them to the NV21 array.
    */
   @RequiresApi(VERSION_CODES.KITKAT)
-  private static ByteBuffer yuv420ThreePlanesToNV21(
-          Plane[] yuv420888planes, int width, int height) {
+  private static ByteBuffer yuv420ThreePlanesToNV21(Plane[] yuv420888planes, int width, int height) {
     int imageSize = width * height;
     byte[] out = new byte[imageSize + 2 * (imageSize / 4)];
 
@@ -206,7 +200,8 @@ public class BitmapUtils {
 
       ByteBuffer uBuffer = yuv420888planes[1].getBuffer();
       ByteBuffer vBuffer = yuv420888planes[2].getBuffer();
-      // Get the first V value from the V buffer, since the U buffer does not contain it.
+      // Get the first V value from the V buffer, since the U buffer does not contain
+      // it.
       vBuffer.get(out, imageSize, 1);
       // Copy the first U value and the remaining VU values from the U buffer.
       uBuffer.get(out, imageSize + 1, 2 * imageSize / 4 - 1);
@@ -223,7 +218,9 @@ public class BitmapUtils {
     return ByteBuffer.wrap(out);
   }
 
-  /** Checks if the UV plane buffers of a YUV_420_888 image are in the NV21 format. */
+  /**
+   * Checks if the UV plane buffers of a YUV_420_888 image are in the NV21 format.
+   */
   @RequiresApi(VERSION_CODES.KITKAT)
   private static boolean areUVPlanesNV21(Plane[] planes, int width, int height) {
     int imageSize = width * height;
@@ -235,14 +232,15 @@ public class BitmapUtils {
     int vBufferPosition = vBuffer.position();
     int uBufferLimit = uBuffer.limit();
 
-    // Advance the V buffer by 1 byte, since the U buffer will not contain the first V value.
+    // Advance the V buffer by 1 byte, since the U buffer will not contain the first
+    // V value.
     vBuffer.position(vBufferPosition + 1);
-    // Chop off the last byte of the U buffer, since the V buffer will not contain the last U value.
+    // Chop off the last byte of the U buffer, since the V buffer will not contain
+    // the last U value.
     uBuffer.limit(uBufferLimit - 1);
 
     // Check that the buffers are equal and have the expected number of elements.
-    boolean areNV21 =
-        (vBuffer.remaining() == (2 * imageSize / 4 - 2)) && (vBuffer.compareTo(uBuffer) == 0);
+    boolean areNV21 = (vBuffer.remaining() == (2 * imageSize / 4 - 2)) && (vBuffer.compareTo(uBuffer) == 0);
 
     // Restore buffers to their initial state.
     vBuffer.position(vBufferPosition);
@@ -254,12 +252,12 @@ public class BitmapUtils {
   /**
    * Unpack an image plane into a byte array.
    *
-   * <p>The input plane data will be copied in 'out', starting at 'offset' and every pixel will be
-   * spaced by 'pixelStride'. Note that there is no row padding on the output.
+   * The input plane data will be copied in 'out', starting at 'offset' and every
+   * pixel will be spaced by 'pixelStride'. Note that there is no row padding on
+   * the output.
    */
   @TargetApi(VERSION_CODES.KITKAT)
-  private static void unpackPlane(
-          Plane plane, int width, int height, byte[] out, int offset, int pixelStride) {
+  private static void unpackPlane(Plane plane, int width, int height, byte[] out, int offset, int pixelStride) {
     ByteBuffer buffer = plane.getBuffer();
     buffer.rewind();
 
