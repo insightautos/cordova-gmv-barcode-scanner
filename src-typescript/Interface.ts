@@ -16,14 +16,18 @@ export interface IBarcodeFormats {
 
 export interface IOptions {
   barcodeFormats?: IBarcodeFormats;
+  beepOnSuccess?: boolean;
+  vibrateOnSuccess?: boolean;
   detectorSize?: number;
   rotateCamera?: boolean;
 }
 
 export interface IConfig {
   barcodeFormats: number;
+  beepOnSuccess: boolean;
+  vibrateOnSuccess: boolean;
   detectorSize: number;
-  rotateCamera?: boolean;
+  rotateCamera: boolean;
 }
 
 export interface IResult {

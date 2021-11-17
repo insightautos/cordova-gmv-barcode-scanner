@@ -6,16 +6,16 @@ import {
   IOptions,
   IResult,
 } from './Interface';
-import { getKeyByValue } from './ObjectUtils';
 import { defaultOptions } from './Options';
+import { keyByValue } from './util/Object';
 
 export class MLKitBarcodeScanner {
   private getBarcodeFormat(format: number): string {
-    return getKeyByValue(barcodeFormat, format);
+    return keyByValue(barcodeFormat, format);
   }
 
   private getBarcodeType(type: number): string {
-    return getKeyByValue(barcodeType, type);
+    return keyByValue(barcodeType, type);
   }
 
   private getBarcodeFormatFlags(barcodeFormats?: IBarcodeFormats): number {

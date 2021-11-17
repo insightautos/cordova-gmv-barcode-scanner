@@ -1,4 +1,4 @@
-export function getKeyByValue<TObject>(
+export function keyByValue<TObject>(
   obj: { [s: string]: TObject },
   value: TObject,
 ): string {

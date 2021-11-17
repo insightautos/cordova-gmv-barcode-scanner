@@ -16,6 +16,8 @@ export const defaultOptions: Required<IOptions> = Object.freeze({
     PDF417: true,
     Aztec: true,
   },
+  beepOnSuccess: false,
+  vibrateOnSuccess: false,
   detectorSize: 0.6,
   rotateCamera: false,
 });

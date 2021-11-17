@@ -14,12 +14,16 @@
 
 @implementation CDViOSScanner
 
+SystemSoundID _soundFileObject;
+
 - (void)pluginInitialize
 {
     _previousStatusBarStyle = -1;
     _previousOrientation = UIInterfaceOrientationUnknown;
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"beep" ofType:@"caf"];
+    NSURL *url = [NSURL fileURLWithPath:path];
+    AudioServicesCreateSystemSoundID((__bridge CFURLRef)url, &_soundFileObject);
 }
-
 
 - (void)startScan:(CDVInvokedUrlCommand *)command
 {
@@ -29,7 +33,7 @@
     [[UIDevice currentDevice] setValue: [NSNumber numberWithInteger: UIInterfaceOrientationPortrait] forKey:@"orientation"];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"Arguments %@", command.arguments);
-        if(self->_scannerOpen == YES)
+        if (self->_scannerOpen == YES)
         {
             //Scanner is currently open, throw error.
             NSArray *response = @[@"SCANNER_OPEN", @"", @""];
@@ -48,6 +52,8 @@
             NSNumberFormatter* f = [[NSNumberFormatter alloc] init];
             f.numberStyle = NSNumberFormatterDecimalStyle;
             NSDictionary* config = [command.arguments objectAtIndex:0];
+            self->_beepOnSuccess = [[config valueForKey:@"beepOnSuccess"] boolValue] ?: NO;
+            self->_vibrateOnSuccess = [[config valueForKey:@"vibrateOnSuccess"] boolValue] ?: NO;
             NSNumber* barcodeFormats = [config valueForKey:@"barcodeFormats"] ?: @1234;
             self.cameraViewController.barcodeFormats = barcodeFormats;
             self.cameraViewController.detectorSize = (CGFloat)[[config valueForKey:@"detectorSize"] ?: @0.5 floatValue];
@@ -68,6 +74,16 @@
 
     NSArray* response = @[barcode.rawValue, @(barcode.format), @(barcode.valueType)];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:response];
+    
+    if (self->_beepOnSuccess)
+    {
+        AudioServicesPlaySystemSound(_soundFileObject);
+    }
+
+    if (self->_vibrateOnSuccess)
+    {
+        AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+    }
 
     [self resetOrientation];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:_callback];
