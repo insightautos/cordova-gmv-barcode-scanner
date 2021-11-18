@@ -1,36 +1,110 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.mobisys.scanner.test" version="1.0.0"
-    xmlns="http://www.w3.org/ns/widgets"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>scan-test-app</name>
-    <description>
+<widget id="com.mobisys.scanner.test"
+  version="1.0.0"
+  xmlns="http://www.w3.org/ns/widgets"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>scan-test-app</name>
+  <description>
         A sample Apache Cordova application that responds to the deviceready event.
-    </description>
-    <author email="dev@cordova.apache.org" href="http://cordova.io">
+  </description>
+  <author email="dev@cordova.apache.org"
+    href="http://cordova.io">
         Apache Cordova Team
-    </author>
-    <content src="index.html" />
-    <access origin="*" />
-    <allow-intent href="http://*/*" />
-    <allow-intent href="https://*/*" />
-    <allow-intent href="tel:*" />
-    <allow-intent href="sms:*" />
-    <allow-intent href="mailto:*" />
-    <allow-intent href="geo:*" />
-    <platform name="android">
-        <allow-intent href="market:*" />
-        <config-file parent="/manifest" target="AndroidManifest.xml">
-            <uses-feature android:name="android.hardware.camera" android:required="false" />
-            <uses-feature android:name="android.hardware.microphone" android:required="false" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-        </config-file>
-    </platform>
-    <platform name="ios">
-        <allow-intent href="itms:*" />
-        <allow-intent href="itms-apps:*" />
-        <edit-config file="*-Info.plist" mode="merge" target="NSCameraUsageDescription">
-            <string>This app would like to access your camera to scan barcodes</string>
-        </edit-config>
-    </platform>
+  </author>
+  <content src="index.html" />
+  <access origin="*" />
+  <allow-intent href="http://*/*" />
+  <allow-intent href="https://*/*" />
+  <allow-intent href="tel:*" />
+  <allow-intent href="sms:*" />
+  <allow-intent href="mailto:*" />
+  <allow-intent href="geo:*" />
+  <platform name="android">
+    <allow-intent href="market:*" />
+    <config-file parent="/manifest"
+      target="AndroidManifest.xml">
+      <uses-feature android:name="android.hardware.camera"
+        android:required="false" />
+      <uses-feature android:name="android.hardware.microphone"
+        android:required="false" />
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    </config-file>
+    <icon src="res/android/mipmap-mdpi/ic_launcher.png"
+      density="mdpi" />
+    <icon src="res/android/mipmap-hdpi/ic_launcher.png"
+      density="hdpi" />
+    <icon src="res/android/mipmap-xhdpi/ic_launcher.png"
+      density="xhdpi" />
+    <icon src="res/android/mipmap-xxhdpi/ic_launcher.png"
+      density="xxhdpi" />
+    <icon src="res/android/mipmap-xxxhdpi/ic_launcher.png"
+      density="xxxhdpi" />
+  </platform>
+  <platform name="ios">
+    <allow-intent href="itms:*" />
+    <allow-intent href="itms-apps:*" />
+    <edit-config file="*-Info.plist"
+      mode="merge"
+      target="NSCameraUsageDescription">
+      <string>This app would like to access your camera to scan barcodes</string>
+    </edit-config>
+    <icon src="res/ios/180.png"
+      width="180"
+      height="180" />
+    <icon src="res/ios/60.png"
+      width="60"
+      height="60" />
+    <icon src="res/ios/120.png"
+      width="120"
+      height="120" />
+    <icon src="res/ios/76.png"
+      width="76"
+      height="76" />
+    <icon src="res/ios/152.png"
+      width="152"
+      height="152" />
+    <icon src="res/ios/40.png"
+      width="40"
+      height="40" />
+    <icon src="res/ios/80.png"
+      width="80"
+      height="80" />
+    <icon src="res/ios/57.png"
+      width="57"
+      height="57" />
+    <icon src="res/ios/114.png"
+      width="114"
+      height="114" />
+    <icon src="res/ios/72.png"
+      width="72"
+      height="72" />
+    <icon src="res/ios/144.png"
+      width="144"
+      height="144" />
+    <icon src="res/ios/167.png"
+      width="167"
+      height="167" />
+    <icon src="res/ios/29.png"
+      width="29"
+      height="29" />
+    <icon src="res/ios/58.png"
+      width="58"
+      height="58" />
+    <icon src="res/ios/87.png"
+      width="87"
+      height="87" />
+    <icon src="res/ios/50.png"
+      width="50"
+      height="50" />
+    <icon src="res/ios/100.png"
+      width="100"
+      height="100" />
+    <icon src="res/ios/1167.png"
+      width="167"
+      height="167" />
+    <icon src="res/ios/1024.png"
+      width="1024"
+      height="1024" />
+  </platform>
 </widget>

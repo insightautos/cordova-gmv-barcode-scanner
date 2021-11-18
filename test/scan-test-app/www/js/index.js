@@ -21,16 +21,26 @@
 // See https://cordova.apache.org/docs/en/latest/cordova/events/events.html#deviceready
 document.addEventListener('deviceready', onDeviceReady, false);
 
-function log(data) {
-  alert(JSON.stringify(data, null, 2));
+function onSuccess(result) {
+  const node = document.createElement('div');
+  node.textContent = `${result.text} (${result.format}/${result.type})`;
+  document.getElementById('output').prepend(node);
 }
 
 function scan() {
-  cordova.plugins.mlkit.barcodeScanner.scan({}, log, console.error);
+  const formData = new FormData(document.querySelector('form'));
+  const options = {};
+
+  for (const pair of formData.entries()) {
+    const key = pair[0];
+    const value = pair[1];
+    options[key] = value === 'true';
+  }
+
+  cordova.plugins.mlkit.barcodeScanner.scan(options, onSuccess, console.error);
 }
 
 function onDeviceReady() {
   console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
-  document.getElementById('deviceready').classList.add('ready');
   document.getElementById('scan').onclick = scan;
 }
