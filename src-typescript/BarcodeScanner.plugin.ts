@@ -45,8 +45,15 @@ export class MLKitBarcodeScanner {
     const config: IConfig = {
       ...defaultOptions,
       ...userOptions,
-      barcodeFormats: this.getBarcodeFormatFlags(userOptions.barcodeFormats),
+      barcodeFormats: this.getBarcodeFormatFlags(defaultOptions.barcodeFormats),
     };
+
+    if (userOptions && userOptions.barcodeFormats) {
+      config.barcodeFormats = this.getBarcodeFormatFlags(
+        userOptions.barcodeFormats,
+      );
+    }
+
     this.sendScanRequest(config, success, failure);
   }
 
