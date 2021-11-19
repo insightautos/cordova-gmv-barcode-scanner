@@ -149,7 +149,7 @@ npm i
 Prepare Cordova:
 
 ```
-cordova platform add android && cordova plugin add ../../ --link --force
+cordova prepare && cordova plugin add ../../ --link --force
 ```
 
 Build and run the project Android:
