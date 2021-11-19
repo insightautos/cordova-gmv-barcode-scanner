@@ -74,14 +74,16 @@ npx cordova plugin add cordova-plugin-mlkit-barcode-scanner
 To use the plugin simply call `cordova.plugins.mlkit.barcodeScanner.scan(options, sucessCallback, failureCallback)`. See the sample below.
 
 ```javascript
-cordova.plugins.mlkit.barcodeScanner.scan(options, (error, result) => {
-  if (error) {
+cordova.plugins.mlkit.barcodeScanner.scan(
+  options,
+  (result) => {
+    // Do something with the data
+    alert(result);
+  },
+  (error) => {
     // Error handling
-  }
-
-  // Do something with the data
-  alert(result);
-});
+  },
+);
 ```
 
 ### Plugin Options
