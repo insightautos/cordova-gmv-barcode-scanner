@@ -128,6 +128,42 @@ result: {
 }
 ```
 
+## Known Issues
+
+On some devices the camera may be upside down.
+
+Here is a list of devices with this problem:
+
+- Zebra MC330K (Manufacturer: Zebra Technologies, Model: MC33)
+
+Current Solution:
+if your device has this problem, you can call the plugin with the option `rotateCamera` set to `true`.
+This will rotate the camera stream by 180 degrees.
+
+## Development
+
+### Build Process
+
+This project uses npm scripts for building:
+
+```shell
+# lint the project using eslint
+npm run lint
+
+# removes the generated folders
+npm run clean
+
+# build the project
+# (includes clean and lint)
+npm run build
+
+# publish the project
+# (includes build)
+npm publish
+```
+
+A VS Code task for `build` is also included.
+
 ## Run the test app
 
 Install cordova:
@@ -166,18 +202,11 @@ and iOS:
 cordova build ios && cordova run ios
 ```
 
-## Build process
+### Versioning
 
-Because the plugin based on TypeScript since 2.1.3 it's necessary that you run `npm run build` to create the www folder.
+⚠️ Before incrementing the version in `package.json`, remember to increment the version in `plugin.xml` by hand.
 
-## Known Issues
+### VS Code Extensions
 
-On some devices the camera may be upside down.
-
-Here is a list of devices with this problem:
-
-- Zebra MC330K (Manufacturer: Zebra Technologies, Model: MC33)
-
-Current Solution:
-if your device has this problem, you can call the plugin with the option `rotateCamera` set to `true`.
-This will rotate the camera stream by 180 degrees.
+This project is intended to be used with Visual Studio Code and the recommended extensions can be found in [`.vscode/extensions.json`](.vscode/extensions.json).
+When you open this repository for the first time in Visual Studio Code you should get a prompt asking you to install the recommended extensions.
