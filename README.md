@@ -164,6 +164,10 @@ and iOS:
 cordova build ios && cordova run ios
 ```
 
+## Build process
+
+Because the plugin based on TypeScript since 2.1.3 it's necessary that you run `npm run build` to create the www folder.
+
 ## Known Issues
 
 On some devices the camera may be upside down.
