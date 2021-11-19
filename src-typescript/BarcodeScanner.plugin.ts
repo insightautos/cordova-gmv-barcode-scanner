@@ -27,9 +27,8 @@ export class MLKitBarcodeScanner {
     for (key in formats) {
       if (
         barcodeFormat.hasOwnProperty(key) &&
-        formats &&
         formats.hasOwnProperty(key) &&
-        formats[key] === true
+        formats[key]
       ) {
         barcodeFormatFlag += barcodeFormat[key];
       }
@@ -42,17 +41,13 @@ export class MLKitBarcodeScanner {
     success: (result: IResult) => unknown,
     failure: (error: IError) => unknown,
   ): void {
+    const barcodeFormats =
+      userOptions?.barcodeFormats || defaultOptions.barcodeFormats;
     const config: IConfig = {
       ...defaultOptions,
       ...userOptions,
-      barcodeFormats: this.getBarcodeFormatFlags(defaultOptions.barcodeFormats),
+      barcodeFormats: this.getBarcodeFormatFlags(barcodeFormats),
     };
-
-    if (userOptions && userOptions.barcodeFormats) {
-      config.barcodeFormats = this.getBarcodeFormatFlags(
-        userOptions.barcodeFormats,
-      );
-    }
 
     this.sendScanRequest(config, success, failure);
   }
