@@ -14,15 +14,14 @@
 
 @implementation CDViOSScanner
 
-SystemSoundID _soundFileObject;
-
 - (void)pluginInitialize
 {
     _previousStatusBarStyle = -1;
     _previousOrientation = UIInterfaceOrientationUnknown;
-    NSString *path = [[NSBundle mainBundle] pathForResource:@"beep" ofType:@"caf"];
-    NSURL *url = [NSURL fileURLWithPath:path];
-    AudioServicesCreateSystemSoundID((__bridge CFURLRef)url, &_soundFileObject);
+    NSString *beepSoundPath = [[NSBundle mainBundle] pathForResource:@"beep" ofType:@"caf"];
+    NSURL *beepSoundUrl = [NSURL fileURLWithPath:beepSoundPath];
+    self->_player = [[AVAudioPlayer alloc] initWithContentsOfURL:beepSoundUrl
+                                                               error:nil];
 }
 
 - (void)startScan:(CDVInvokedUrlCommand *)command
@@ -74,19 +73,25 @@ SystemSoundID _soundFileObject;
 
     NSArray* response = @[barcode.rawValue, @(barcode.format), @(barcode.valueType)];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:response];
+
+    [self playBeep];
     
+    [self resetOrientation];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:_callback];
+}
+
+- (void)playBeep
+{
     if (self->_beepOnSuccess)
     {
-        AudioServicesPlaySystemSound(_soundFileObject);
+        [self->_player prepareToPlay];
+        [self->_player play];
     }
 
     if (self->_vibrateOnSuccess)
     {
         AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
     }
-
-    [self resetOrientation];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:_callback];
 }
 
 - (void)closeScanner

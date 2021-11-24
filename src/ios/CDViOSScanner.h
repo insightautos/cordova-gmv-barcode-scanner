@@ -9,6 +9,7 @@
 @interface CDViOSScanner : CDVPlugin {
     NSString *_callback;
     Boolean _scannerOpen;
+    AVAudioPlayer* _player;
     Boolean _beepOnSuccess;
     Boolean _vibrateOnSuccess;
 }
