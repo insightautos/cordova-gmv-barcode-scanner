@@ -70,8 +70,15 @@
 {
     [self.cameraViewController dismissViewControllerAnimated:NO completion:nil];
     _scannerOpen = NO;
+    
+    NSString* value = barcode.displayValue;
+    
+    if(barcode.rawValue && [barcode.rawValue hasPrefix:@"]C"])
+    {
+        value = barcode.rawValue;
+    }
 
-    NSArray* response = @[barcode.rawValue, @(barcode.format), @(barcode.valueType)];
+    NSArray* response = @[value, @(barcode.format), @(barcode.valueType)];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:response];
 
     [self playBeep];

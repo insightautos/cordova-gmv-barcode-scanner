@@ -361,9 +361,15 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
                     // Toast.makeText(CaptureActivity.this, "FOUND: " + barcode.getDisplayValue(),
                     // Toast.LENGTH_SHORT).show();
                     Intent data = new Intent();
+                    String value = barcode.getDisplayValue();
+
+                    if (barcode.getRawValue() != null && barcode.getRawValue().startsWith("]C")) {
+                      value = barcode.getRawValue();
+                    }
+
                     data.putExtra(BarcodeFormat, barcode.getFormat());
                     data.putExtra(BarcodeType, barcode.getValueType());
-                    data.putExtra(BarcodeValue, barcode.getRawValue());
+                    data.putExtra(BarcodeValue, value);
                     setResult(CommonStatusCodes.SUCCESS, data);
                     finish();
 
