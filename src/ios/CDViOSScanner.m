@@ -70,19 +70,22 @@
 {
     [self.cameraViewController dismissViewControllerAnimated:NO completion:nil];
     _scannerOpen = NO;
-    
+
     NSString* value = barcode.displayValue;
-    
-    if(barcode.rawValue && [barcode.rawValue hasPrefix:@"]C"])
+
+    // To be able to read GS1-128 barcodes correctly we must use rawValue
+    // instead of displayValue, since the latter omits non-printable
+    // characters.
+    if(barcode.rawValue != nil && [barcode.rawValue hasPrefix:@"]C1"])
     {
         value = barcode.rawValue;
     }
-
+    
     NSArray* response = @[value, @(barcode.format), @(barcode.valueType)];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:response];
 
     [self playBeep];
-    
+
     [self resetOrientation];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:_callback];
 }

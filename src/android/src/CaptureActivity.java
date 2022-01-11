@@ -363,7 +363,10 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
                     Intent data = new Intent();
                     String value = barcode.getDisplayValue();
 
-                    if (barcode.getRawValue() != null && barcode.getRawValue().startsWith("]C")) {
+                    // To be able to read GS1-128 barcodes correctly we must use rawValue
+                    // instead of displayValue, since the latter omits non-printable
+                    // characters.
+                    if (barcode.getRawValue() != null && barcode.getRawValue().startsWith("]C1")) {
                       value = barcode.getRawValue();
                     }
 
