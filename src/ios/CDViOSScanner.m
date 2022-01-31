@@ -71,16 +71,17 @@
     [self.cameraViewController dismissViewControllerAnimated:NO completion:nil];
     _scannerOpen = NO;
 
-    NSString* value = barcode.displayValue;
+    NSString* value = barcode.rawValue;
 
-    // To be able to read GS1-128 barcodes correctly we must use rawValue
-    // instead of displayValue, since the latter omits non-printable
-    // characters.
-    if(barcode.rawValue != nil && [barcode.rawValue hasPrefix:@"]C1"])
+    // rawValue returns null if string is not UTF-8 encoded.
+    // If that's the case, we will decode it as ASCII,
+    // because it's the most common encoding for barcodes.
+    // e.g. https://www.barcodefaq.com/1d/code-128/
+    if(barcode.rawValue == nil)
     {
-        value = barcode.rawValue;
+        value = [[NSString alloc] initWithData:barcode.rawData encoding:NSASCIIStringEncoding];
     }
-    
+
     NSArray* response = @[value, @(barcode.format), @(barcode.valueType)];
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:response];
 

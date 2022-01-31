@@ -52,6 +52,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.common.InputImage;
 import com.mobisys.cordova.plugins.mlkit.barcode.scanner.utils.BitmapUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -361,13 +362,14 @@ public class CaptureActivity extends AppCompatActivity implements SurfaceHolder.
                     // Toast.makeText(CaptureActivity.this, "FOUND: " + barcode.getDisplayValue(),
                     // Toast.LENGTH_SHORT).show();
                     Intent data = new Intent();
-                    String value = barcode.getDisplayValue();
+                    String value = barcode.getRawValue();
 
-                    // To be able to read GS1-128 barcodes correctly we must use rawValue
-                    // instead of displayValue, since the latter omits non-printable
-                    // characters.
-                    if (barcode.getRawValue() != null && barcode.getRawValue().startsWith("]C1")) {
-                      value = barcode.getRawValue();
+                    // rawValue returns null if string is not UTF-8 encoded.
+                    // If that's the case, we will decode it as ASCII,
+                    // because it's the most common encoding for barcodes.
+                    // e.g. https://www.barcodefaq.com/1d/code-128/
+                    if (barcode.getRawValue() == null) {
+                      value = new String(barcode.getRawBytes(), StandardCharsets.US_ASCII);
                     }
 
                     data.putExtra(BarcodeFormat, barcode.getFormat());
