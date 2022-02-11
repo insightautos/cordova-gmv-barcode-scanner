@@ -24,10 +24,6 @@
     <allow-intent href="market:*" />
     <config-file parent="/manifest"
       target="AndroidManifest.xml">
-      <uses-feature android:name="android.hardware.camera"
-        android:required="false" />
-      <uses-feature android:name="android.hardware.microphone"
-        android:required="false" />
       <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     </config-file>
     <icon src="res/android/mipmap-mdpi/ic_launcher.png"

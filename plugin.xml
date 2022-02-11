@@ -56,27 +56,13 @@
     </config-file>
 
     <config-file parent="/*"
-      target="app/src/main/AndroidManifest.xml">
-      <uses-permission android:name="android.permission.CAMERA" />
-    </config-file>
-    <config-file parent="application"
-      target="app/src/main/AndroidManifest.xml">
-      <meta-data android:name="com.google.android.gms.version"
-        android:value="@integer/google_play_services_version" />
-      <meta-data android:name="com.google.android.gms.vision.DEPENDENCIES"
-        android:value="barcode" />
-      <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES"
-        android:value="barcode" />
-      <activity android:label="Read Barcode"
-        android:name="com.mobisys.cordova.plugins.mlkit.barcode.scanner.CaptureActivity"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-    </config-file>
-
-    <config-file parent="/*"
       target="AndroidManifest.xml">
       <uses-permission android:name="android.permission.CAMERA" />
       <uses-permission android:name="android.permission.VIBRATE" />
+      <uses-feature android:name="android.hardware.camera"
+        android:required="false" />
     </config-file>
+
     <config-file parent="application"
       target="AndroidManifest.xml">
       <meta-data android:name="com.google.android.gms.version"
@@ -87,26 +73,6 @@
         android:name="com.mobisys.cordova.plugins.mlkit.barcode.scanner.CaptureActivity"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
     </config-file>
-
-    <config-file target="res/values/strings.xml"
-      parent="/*">
-      <string name="ok">OK</string>
-      <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
-      <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
-      <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
-      <string name="title_activity_main">Barcode Reader Activity</string>
-      <string name="barcode_header">Click &quot;Read Barcode&quot; to read a barcode</string>
-      <string name="read_barcode">Read Barcode</string>
-      <string name="auto_focus">Auto Focus</string>
-      <string name="use_flash">Use Flash</string>
-      <string name="barcode_success">Barcode read successfully</string>
-      <string name="barcode_failure">No barcode captured</string>
-      <string name="barcode_error">"Error reading barcode: %1$s"</string>
-    </config-file>
-
-    <source-file src="src/android/res/media/beep.ogg"
-      target="beep.ogg"
-      target-dir="assets" />
 
     <source-file src="src/android/src/CaptureActivity.java"
       target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner" />
@@ -117,6 +83,12 @@
     <source-file src="src/android/src/utils/FrameMetadata.java"
       target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/utils" />
 
+    <resource-file src="src/android/res/assets/beep.ogg"
+      target="assets/beep.ogg" />
+    <resource-file src="src/android/res/values/strings-en.xml"
+      target="res/values/strings.xml" />
+    <resource-file src="src/android/res/values/strings-de.xml"
+      target="res/values-de/strings.xml" />
     <resource-file src="src/android/res/layout/capture_activity.xml"
       target="res/layout/capture_activity.xml" />
     <resource-file src="src/android/res/drawable/flashlight.png"

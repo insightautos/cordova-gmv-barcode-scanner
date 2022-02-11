@@ -1,8 +1,13 @@
 package com.mobisys.cordova.plugins.mlkit.barcode.scanner;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
+import android.hardware.camera2.CameraManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,14 +39,17 @@ public class MLKitBarcodeScanner extends CordovaPlugin {
   private Boolean _VibrateOnSuccess;
   private MediaPlayer _MediaPlayer;
   private Vibrator _Vibrator;
+
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
 
-    _Vibrator = (Vibrator) cordova.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+    Context context = cordova.getContext();
+
+    _Vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
     _MediaPlayer = new MediaPlayer();
 
     try {
-      AssetFileDescriptor descriptor = cordova.getContext().getAssets().openFd("beep.ogg");
+      AssetFileDescriptor descriptor = context.getAssets().openFd("beep.ogg");
       _MediaPlayer.setDataSource(descriptor.getFileDescriptor(), descriptor.getStartOffset(), descriptor.getLength());
       descriptor.close();
       _MediaPlayer.prepare();
@@ -52,8 +60,35 @@ public class MLKitBarcodeScanner extends CordovaPlugin {
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-    Context context = cordova.getActivity().getApplicationContext();
+    Activity activity = cordova.getActivity();
+    Boolean hasCamera = activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
+    CameraManager cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+
     _CallbackContext = callbackContext;
+
+    int numberOfCameras = 0;
+
+    try {
+      numberOfCameras = cameraManager.getCameraIdList().length;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    if (!hasCamera || numberOfCameras == 0) {
+      AlertDialog alertDialog = new AlertDialog.Builder(activity).create();
+      alertDialog.setMessage(activity.getString(activity.getResources()
+          .getIdentifier("no_cameras_found", "string", activity.getPackageName())));
+      alertDialog.setButton(
+          AlertDialog.BUTTON_POSITIVE, activity.getString(activity.getResources()
+              .getIdentifier("ok", "string", activity.getPackageName())),
+          new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+              dialog.dismiss();
+            }
+          });
+      alertDialog.show();
+      return false;
+    }
 
     if (action.equals("startScan")) {
       class OneShotTask implements Runnable {
@@ -73,7 +108,7 @@ public class MLKitBarcodeScanner extends CordovaPlugin {
           }
         }
       }
-      Thread t = new Thread(new OneShotTask(context, args));
+      Thread t = new Thread(new OneShotTask(cordova.getContext(), args));
       t.start();
       return true;
     }
@@ -119,7 +154,7 @@ public class MLKitBarcodeScanner extends CordovaPlugin {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
               _Vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
             } else {
-              //deprecated in API 26
+              // deprecated in API 26 aka Oreo
               _Vibrator.vibrate(duration);
             }
           }
