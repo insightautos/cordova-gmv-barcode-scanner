@@ -28,42 +28,55 @@
 {
     _previousOrientation = [[UIApplication sharedApplication] statusBarOrientation];
 
-    //Force portrait orientation.
-    [[UIDevice currentDevice] setValue: [NSNumber numberWithInteger: UIInterfaceOrientationPortrait] forKey:@"orientation"];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"Arguments %@", command.arguments);
-        if (self->_scannerOpen == YES)
-        {
-            //Scanner is currently open, throw error.
-            NSArray *response = @[@"SCANNER_OPEN", @"", @""];
-            CDVPluginResult *pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsArray:response];
+    BOOL hasCamera = [UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera];
 
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        }
-        else
-        {
-            //Open scanner.
-            self->_scannerOpen = YES;
-            self.cameraViewController = [[CameraViewController alloc] init];
-            self.cameraViewController.delegate = self;
+    if (hasCamera)
+    {
+        //Force portrait orientation.
+        [[UIDevice currentDevice] setValue: [NSNumber numberWithInteger: UIInterfaceOrientationPortrait] forKey:@"orientation"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"Arguments %@", command.arguments);
+            if (self->_scannerOpen == YES)
+            {
+                //Scanner is currently open, throw error.
+                NSArray *response = @[@"SCANNER_OPEN", @"", @""];
+                CDVPluginResult *pluginResult=[CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsArray:response];
 
-            //Provide settings to the camera view.
-            NSNumberFormatter* f = [[NSNumberFormatter alloc] init];
-            f.numberStyle = NSNumberFormatterDecimalStyle;
-            NSDictionary* config = [command.arguments objectAtIndex:0];
-            self->_beepOnSuccess = [[config valueForKey:@"beepOnSuccess"] boolValue] ?: NO;
-            self->_vibrateOnSuccess = [[config valueForKey:@"vibrateOnSuccess"] boolValue] ?: NO;
-            NSNumber* barcodeFormats = [config valueForKey:@"barcodeFormats"] ?: @1234;
-            self.cameraViewController.barcodeFormats = barcodeFormats;
-            self.cameraViewController.detectorSize = (CGFloat)[[config valueForKey:@"detectorSize"] ?: @0.5 floatValue];
-            self.cameraViewController.modalPresentationStyle = UIModalPresentationFullScreen;
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            }
+            else
+            {
+                //Open scanner.
+                self->_scannerOpen = YES;
+                self.cameraViewController = [[CameraViewController alloc] init];
+                self.cameraViewController.delegate = self;
 
-            NSLog(@"scanAreaSize: %f, barcodeFormats: %@", self.cameraViewController.detectorSize, self.cameraViewController.barcodeFormats);
+                //Provide settings to the camera view.
+                NSNumberFormatter* f = [[NSNumberFormatter alloc] init];
+                f.numberStyle = NSNumberFormatterDecimalStyle;
+                NSDictionary* config = [command.arguments objectAtIndex:0];
+                self->_beepOnSuccess = [[config valueForKey:@"beepOnSuccess"] boolValue] ?: NO;
+                self->_vibrateOnSuccess = [[config valueForKey:@"vibrateOnSuccess"] boolValue] ?: NO;
+                NSNumber* barcodeFormats = [config valueForKey:@"barcodeFormats"] ?: @1234;
+                self.cameraViewController.barcodeFormats = barcodeFormats;
+                self.cameraViewController.detectorSize = (CGFloat)[[config valueForKey:@"detectorSize"] ?: @0.5 floatValue];
+                self.cameraViewController.modalPresentationStyle = UIModalPresentationFullScreen;
 
-            [self.viewController presentViewController:self.cameraViewController animated: NO completion:nil];
-            self->_callback = command.callbackId;
-        }
-    });
+                NSLog(@"scanAreaSize: %f, barcodeFormats: %@", self.cameraViewController.detectorSize, self.cameraViewController.barcodeFormats);
+
+                [self.viewController presentViewController:self.cameraViewController animated: NO completion:nil];
+                self->_callback = command.callbackId;
+            }
+        });
+    }
+    else
+    {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil message:NSLocalizedString(@"The device has no camera.", @"Message to the user if the device has no camera.") preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+        [alert addAction:defaultAction];
+
+        [self.viewController presentViewController:alert animated:YES completion:nil];
+    }
 }
 
 - (void)sendResult:(MLKBarcode *)barcode

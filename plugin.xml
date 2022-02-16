@@ -25,6 +25,18 @@
           value="CDViOSScanner" />
       </feature>
     </config-file>
+    <config-file target="*-Info.plist"
+      parent="CFBundleDevelopmentRegion">
+      <string>de_DE</string>
+    </config-file>
+    <config-file target="*-Info.plist"
+      parent="CFBundleLocalizations">
+      <array>
+        <string>en</string>
+        <string>de</string>
+      </array>
+    </config-file>
+
     <framework src="Foundation.framework" />
     <framework src="AVFoundation.framework" />
     <framework src="UIKit.framework" />
@@ -41,7 +53,10 @@
     <source-file src="src/ios/CDViOSScanner.m" />
     <header-file src="src/ios/CameraViewController.h" />
     <source-file src="src/ios/CameraViewController.m" />
-    <resource-file src="src/ios/Sounds/beep.caf" />
+    <resource-file src="res/ios/Sounds/beep.caf"
+      target="beep.caf" />
+    <resource-file src="res/ios/de.lproj/Localizable.strings"
+      target="de.lproj/Localizable.strings" />
   </platform>
   <platform name="android">
     <dependency id="cordova-plugin-androidx-adapter"
@@ -83,19 +98,19 @@
     <source-file src="src/android/src/utils/FrameMetadata.java"
       target-dir="src/com/mobisys/cordova/plugins/mlkit/barcode/scanner/utils" />
 
-    <resource-file src="src/android/res/assets/beep.ogg"
+    <resource-file src="res/android/assets/beep.ogg"
       target="assets/beep.ogg" />
-    <resource-file src="src/android/res/values/strings-en.xml"
+    <resource-file src="res/android/values/strings-en.xml"
       target="res/values/strings.xml" />
-    <resource-file src="src/android/res/values/strings-de.xml"
+    <resource-file src="res/android/values/strings-de.xml"
       target="res/values-de/strings.xml" />
-    <resource-file src="src/android/res/layout/capture_activity.xml"
+    <resource-file src="res/android/layout/capture_activity.xml"
       target="res/layout/capture_activity.xml" />
-    <resource-file src="src/android/res/drawable/flashlight.png"
+    <resource-file src="res/android/drawable/flashlight.png"
       target="res/drawable/flashlight.png" />
-    <resource-file src="src/android/res/drawable/torch_active.xml"
+    <resource-file src="res/android/drawable/torch_active.xml"
       target="res/drawable/torch_active.xml" />
-    <resource-file src="src/android/res/drawable/torch_inactive.xml"
+    <resource-file src="res/android/drawable/torch_inactive.xml"
       target="res/drawable/torch_inactive.xml" />
 
     <framework src="com.android.support:support-v4:27.1.0" />
