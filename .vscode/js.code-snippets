@@ -1,0 +1,8 @@
+{
+  "custom import statement": {
+    "scope": "javascript,typescript",
+    "prefix": "import statement custom",
+    "body": ["import { $2 } from '${1:module}';", "$0"],
+    "description": "Import external module."
+  }
+}

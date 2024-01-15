@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+  <string name="app_name">scan-test-app</string>
+  <string name="launcher_name">@string/app_name</string>
+  <string name="activity_name">@string/launcher_name</string>
+  <string name="ok">OK</string>
+  <string name="permission_camera_rationale">Zur Erfassung wird Zugriff auf die Kamera benötigt</string>
+  <string name="no_camera_permission">Die App kann nicht ausgeführt werden, weil sie keinen Zugriff auf die Kamera hat. Die App wird geschlossen.</string>
+  <string name="no_cameras_found">Das Gerät verfügt über keine Kamera.</string>
+  <string name="barcode_header">Wählen Sie "Barcode lesen" aus, um einen Barcode zu lesen</string>
+  <string name="read_barcode">Barcode lesen</string>
+  <string name="auto_focus">Auto-Fokus</string>
+  <string name="use_flash">Blitz verwenden</string>
+  <string name="barcode_success">Barcode erfolgreich gelesen</string>
+  <string name="barcode_failure">Kein Barcode erfasst</string>
+  <string name="barcode_error">"Fehler beim Lesen von Barcode: %1$s"</string>
+</resources>

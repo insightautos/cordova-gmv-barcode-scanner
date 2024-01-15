@@ -1,2 +1,21 @@
-/.idea
+# OS specific files
 .DS_Store
+Thumbs.db
+
+# Modules
+node_modules/
+
+# Android directories
+.gradle/
+.idea/
+gradle/
+
+# Android files
+local.properties
+gradlew*
+
+# Build directory
+www/
+
+# Other files
+.eslintcache

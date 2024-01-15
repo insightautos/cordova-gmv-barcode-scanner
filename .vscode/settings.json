@@ -1,0 +1,64 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true,
+    "source.organizeImports": false
+  },
+  "editor.detectIndentation": false,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.insertSpaces": true,
+  "editor.rulers": [80],
+  "editor.tabSize": 2,
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "prettier.requireConfig": true,
+  "todohighlight.keywords": [
+    {
+      "text": "NOTE",
+      "backgroundColor": "#ffea00",
+      "color": "#ff0000",
+      "isWholeLine": false
+    },
+    {
+      "text": "HACK",
+      "backgroundColor": "#fbc02d",
+      "color": "#000000",
+      "isWholeLine": true
+    },
+    {
+      "text": "TODO",
+      "backgroundColor": "#ec407a",
+      "color": "#ffffff",
+      "isWholeLine": true
+    },
+    {
+      "text": "FIXME",
+      "backgroundColor": "#d50000",
+      "color": "#ffffff",
+      "isWholeLine": true
+    }
+  ],
+  "typescript.format.semicolons": "insert",
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "xmlTools.splitAttributesOnFormat": true,
+  "xmlTools.enforcePrettySelfClosingTagOnFormat": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[xml]": {
+    "editor.formatOnPaste": false
+  }
+}

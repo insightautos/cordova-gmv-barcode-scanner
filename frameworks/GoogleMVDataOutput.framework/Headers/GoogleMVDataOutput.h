@@ -1,6 +1,0 @@
-#import "GMVDataOutput.h"
-#import "GMVOutputTrackerDelegate.h"
-#import "GMVFocusingDataOutput.h"
-#import "GMVLargestFaceFocusingDataOutput.h"
-#import "GMVMultiDataOutput.h"
-#import "GMVMultiDetectorDataOutput.h"

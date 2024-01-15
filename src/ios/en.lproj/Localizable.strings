@@ -1,0 +1,8 @@
+/*
+  Localizable.strings
+  scan-test-app
+
+  Created by Florian Biebel on 14.02.22.
+
+*/
+"The device has no camera." = "The device has no camera.";

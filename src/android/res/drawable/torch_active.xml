@@ -2,9 +2,8 @@
 
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
     <item>
-        <shape xmlns:android="http://schemas.android.com/apk/res/android">
+        <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
             <solid android:color="#FFFFFF" />
-            <corners android:radius="22.5dp" />
         </shape>
     </item>
     <item android:drawable="@drawable/flashlight" android:bottom="10dp" android:top="10dp" android:left="10dp" android:right="10dp" >

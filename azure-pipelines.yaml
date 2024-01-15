@@ -1,0 +1,36 @@
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+# no CI trigger, must be started manual
+trigger: none
+
+# no pull request triggers
+pr: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Publish
+    displayName: 'Publish'
+    jobs:
+      - job: PublishToAzureArtifacts
+        displayName: 'Only Master: Publish to Azure Artifacts'
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+        steps:
+          - task: NodeTool@0
+            displayName: Set Node version to 14
+            inputs:
+              versionSpec: '14.x'
+          - script: |
+              npm install -g npm@7
+            displayName: 'Installing npm modules'
+          - task: npmAuthenticate@0
+            displayName: Setup authentication for AzureDevOps npm feed
+            inputs:
+              workingFile: .npmrc
+          - script: |
+              npm ci
+            displayName: 'Installing npm modules'
+          - script: |
+              npm publish
+            displayName: 'Publish npm package'

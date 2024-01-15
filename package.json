@@ -1,10 +1,11 @@
 {
-  "name": "cordova-plugin-barcode-detector",
-  "version": "1.5.4",
-  "description": "Google Mobile Vision Barcode Scanner Plugin",
+  "name": "cordova-plugin-mlkit-barcode-scanner",
+  "version": "3.0.7",
+  "description": "Google MLKit Vision Barcode Scanner Plugin",
   "cordova": {
-    "id": "cordova-plugin-barcode-detector",
+    "id": "cordova-plugin-mlkit-barcode-scanner",
     "platforms": [
+      "android",
       "ios"
     ]
   },
@@ -13,19 +14,45 @@
     "cordova-ios",
     "cordova-android"
   ],
-  "engines": [{
-    "name": "cordova",
-    "version": ">=3.0.0"
-  }],
-  "author": "Forrest Middleton",
+  "author": "Florian Biebel",
   "license": "MIT",
-  "main": "index.js",
+  "main": "www/BarcodeScanner.contract.js",
+  "prettier": "@teckel.ts-internal/prettier-config",
+  "engines": {
+    "node": ">=10.0.0"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run lint && npm run clean && npm run transpile",
+    "clean": "mkdir -p 'www' && find 'www' ! -path 'www' -delete",
+    "lint": "eslint . --ext .js,.ts --cache && tsc -p tsconfig.lint.json",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "transpile": "rollup --config --silent",
+    "prepublishOnly": "npm run build"
   },
-  "bugs": {
-    "url": "https://github.com/flobiwankenobi/cordova-plugin-barcode-detector/issues"
+  "files": [
+    "/src/",
+    "/www/**/*.{js,js.map,d.ts}",
+    "/plugin.xml"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner.git"
   },
-  "homepage": "https://github.com/flobiwankenobi/cordova-plugin-barcode-detector#readme",
-  "types": "/types/main.d.ts"
+  "homepage": "https://github.com/MobisysGmbH/cordova-plugin-mlkit-barcode-scanner#readme",
+  "publishConfig": {
+    "registry": "https://pkgs.dev.azure.com/mobisysgmbh/_packaging/mobisys/npm/registry/"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "20.0.0",
+    "@rollup/plugin-node-resolve": "13.0.4",
+    "@teckel.ts-internal/eslint-config": "3.0.0",
+    "@teckel.ts-internal/prettier-config": "1.0.0",
+    "@teckel.ts-internal/ts-config": "2.0.1",
+    "@types/cordova": "0.0.34",
+    "@types/node": "16.7.1",
+    "eslint": "7.32.0",
+    "rollup": "2.56.3",
+    "rollup-plugin-typescript2": "0.30.0",
+    "tslib": "2.3.1"
+  }
 }

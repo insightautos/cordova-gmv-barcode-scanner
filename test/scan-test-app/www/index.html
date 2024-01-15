@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="msapplication-tap-highlight" content="no">
+        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+        <meta name="color-scheme" content="light dark">
+        <link rel="stylesheet" href="css/index.css">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <title>ML Kit Barcode Scanner Test</title>
+    </head>
+    <body>
+        <div class="container px-4 py-4">
+          <div class="row gy-4">
+            <div class="col-12">
+              <p>Press the button below to open the camera and scan a barcode.</p>
+              <button id="scan" class="btn btn-primary btn-lg">Scan</button>
+            </div>
+            <div class="col-12">
+              <form>
+                <h4>Scan options</h4>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="beepOnSuccessSwitch" name="beepOnSuccess" value="true">
+                  <label class="form-check-label" for="beepOnSuccessSwitch">Beep on success</label>
+                </div>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="vibrateOnSuccessSwitch" name="vibrateOnSuccess" value="true">
+                  <label class="form-check-label" for="vibrateOnSuccessSwitch">Vibrate on success</label>
+                </div>
+              </form>
+            </div>
+            <div class="col-12">
+              <h4>Log output</h4>
+              <pre id="output"></pre>
+            </div>
+          </div>
+        </div>
+        <script src="cordova.js"></script>
+        <script src="js/index.js"></script>
+    </body>
+</html>
